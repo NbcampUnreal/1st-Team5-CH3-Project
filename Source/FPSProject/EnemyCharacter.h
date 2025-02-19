@@ -1,5 +1,7 @@
 #pragma once
 
+class AEnemyAIController;
+
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "CharacterInterface.h"

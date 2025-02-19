@@ -1,10 +1,12 @@
 #include "EnemyCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "EnemyAIController.h"
 
 AEnemyCharacter::AEnemyCharacter()
 {
     // AI Pawn 설정
+    AIControllerClass = AEnemyAIController::StaticClass();
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
     
     // 기본 값 설정
@@ -53,7 +55,6 @@ void AEnemyCharacter::TakeDamage(float DamageAmount)
 void AEnemyCharacter::Die()
 {
     if (bIsDead) return;
-
     bIsDead = true;
     
     // 사망 애니메이션 재생
@@ -64,6 +65,12 @@ void AEnemyCharacter::Die()
 
     // AI 이동 중지
     GetCharacterMovement()->StopMovementImmediately();
+    
+     // AI 컨트롤러와의 연결 끊기
+    if (AController* AIController = GetController())
+    {
+        AIController->UnPossess();
+    }
     
     // 콜리전 비활성화
     GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
