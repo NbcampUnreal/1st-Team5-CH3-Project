@@ -20,6 +20,12 @@ AEnemyAIController::AEnemyAIController()
         AIPerceptionComponent->ConfigureSense(*SightConfig);
         AIPerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
     }
+
+    // Behavior Tree 컴포넌트 생성
+    BehaviorTreeComponent = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
+    
+    // Blackboard 컴포넌트 생성
+    BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 }
 
 void AEnemyAIController::BeginPlay()
@@ -40,6 +46,16 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
     if (AEnemyCharacter* EnemyCharacter = Cast<AEnemyCharacter>(InPawn))
     {
         UE_LOG(LogTemp, Log, TEXT("AI Controller possessed Enemy Character"));
+
+        // Behavior Tree 실행
+        if (BehaviorTree)
+        {
+            // Blackboard 초기화
+            BlackboardComponent->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
+            
+            // Behavior Tree 실행
+            BehaviorTreeComponent->StartTree(*BehaviorTree);
+        }
     }
 }
 

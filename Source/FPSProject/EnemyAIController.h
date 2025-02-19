@@ -6,6 +6,9 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BehaviorTreeComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "EnemyAIController.generated.h"
 
 UCLASS()
@@ -36,4 +39,16 @@ protected:
     // 감지 이벤트 처리 함수
     UFUNCTION()
     void OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors);
+
+    // Behavior Tree 컴포넌트
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI|Behavior")
+    UBehaviorTreeComponent* BehaviorTreeComponent;
+
+    // Blackboard 컴포넌트
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI|Behavior")
+    UBlackboardComponent* BlackboardComponent;
+
+    // Behavior Tree 에셋
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Behavior")
+    UBehaviorTree* BehaviorTree;
 }; 
