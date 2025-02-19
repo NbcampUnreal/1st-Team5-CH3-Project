@@ -12,7 +12,7 @@ void AFPSHUD::DrawHUD()
     {
         // 화면 중앙 좌표 계산
         float CenterX = Canvas->ClipX * 0.5f;
-        float CenterY = Canvas->ClipY * 0.55f;
+        float CenterY = Canvas->ClipY * 0.57f;
 
         // 크로스헤어 크기
         float TextureWidth = CrosshairTexture->GetSizeX();
