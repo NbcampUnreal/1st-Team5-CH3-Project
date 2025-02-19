@@ -23,12 +23,12 @@ class FPSPROJECT_API ICharacterInterface
 
 	
 public:
-    // 탐지 기능
-    virtual void OnDetected(AActor* DetectedActor) = 0; // AI가 플레이어를 발견했을 때
-    virtual void OnLostSight(AActor* LostActor) = 0;   // AI가 플레이어를 놓쳤을 때
-
-    // 기본 캐릭터 행동
-    virtual void TakeDamage(float DamageAmount) = 0;   // 피해 입기
-    virtual void Die() = 0;                            // 사망 처리
+  
+        virtual void TakeDamage(float DamageAmount) = 0;  // 피격 처리
+        virtual void Die() = 0;  // 사망 처리
+        virtual void Attack() = 0;  // 공격 실행
+        virtual void MoveTo(FVector TargetLocation) = 0;  // 목표 위치로 이동
+        virtual void PlayAnimation(UAnimMontage* Animation) = 0;  // 애니메이션 실행
+        virtual bool IsAlive() const = 0;  // 생존 여부 체크
 
 };
