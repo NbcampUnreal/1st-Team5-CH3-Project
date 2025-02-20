@@ -29,6 +29,10 @@ public:
     virtual void PlayAnimation(UAnimMontage* Animation) override;
     virtual bool IsAlive() const override;
 
+    // 공격 범위 반환
+    UFUNCTION(BlueprintCallable, Category = "AI|Combat")
+    float GetAttackRange() const { return AttackRange; }
+
 protected:
     virtual void BeginPlay() override;
 
