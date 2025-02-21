@@ -97,14 +97,9 @@ void AEnemyAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActor
             
             if (BlackboardComponent)
             {
+                // TargetActor만 설정하고 MoveTo 태스크에서 이 액터의 위치를 사용
                 BlackboardComponent->SetValueAsObject("TargetActor", bCanSeePlayer ? Player : nullptr);
                 BlackboardComponent->SetValueAsBool("CanSeePlayer", bCanSeePlayer);
-                
-                // 플레이어를 향해 이동하도록 위치 설정 추가
-                if (bCanSeePlayer)
-                {
-                    BlackboardComponent->SetValueAsVector("PatrolLocation", Player->GetActorLocation());
-                }
                 
                 // 디버그 로그 추가
                 UE_LOG(LogTemp, Warning, TEXT("Updated Blackboard Values"));
