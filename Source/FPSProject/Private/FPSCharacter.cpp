@@ -167,3 +167,29 @@ void AFPSCharacter::StopSprint(const FInputActionValue& value)
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
     }
 }
+
+
+void AFPSCharacter::TakeDamage(float DamageAmount) {
+	// 데미지 처리 로직 추가
+}
+
+void AFPSCharacter::Die() {
+	// 캐릭터 사망 처리 로직 추가
+}
+
+void AFPSCharacter::Attack() {
+	// 공격 동작 처리 로직 추가
+}
+
+void AFPSCharacter::MoveTo(FVector TargetLocation) {
+	// 특정 위치로 이동하는 로직 추가
+}
+
+void AFPSCharacter::PlayAnimation(UAnimMontage* Animation) {
+	// 애니메이션 재생 처리 로직 추가
+}
+
+bool AFPSCharacter::IsAlive() const {
+	// 생존 여부 반환 로직 추가
+	return true;
+}
