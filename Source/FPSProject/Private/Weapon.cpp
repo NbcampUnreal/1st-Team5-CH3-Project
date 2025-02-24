@@ -1,37 +1,41 @@
 #include "Weapon.h"
 
-// Sets default values
 AWeapon::AWeapon()
 {
-    // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-    PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
-    // Default values
-    WeaponName = "Default Weapon";
-    AmmoCount = 30;
+	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
+	RootComponent = WeaponMesh;
+
+	MaxAmmo = 10;
+	CurrentAmmo = MaxAmmo;
 }
 
-// Called when the game starts or when spawned
 void AWeapon::BeginPlay()
 {
-    Super::BeginPlay();
+	Super::BeginPlay();
 }
 
-// Called every frame
-void AWeapon::Tick(float DeltaTime)
+void AWeapon::Fire()
 {
-    Super::Tick(DeltaTime);
+	if (CurrentAmmo > 0)
+	{
+		CurrentAmmo--;
+		UE_LOG(LogTemp, Warning, TEXT("%s Fired! Ammo: %d/%d"), *GetName(), CurrentAmmo, MaxAmmo);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Out of Ammo! Reload Needed."));
+	}
 }
 
-void AWeapon::Use()
+void AWeapon::Reload()
 {
-    if (AmmoCount > 0)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("%s Used! Ammo Left: %d"), *WeaponName, AmmoCount - 1);
-        AmmoCount--;
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("%s is out of ammo!"), *WeaponName);
-    }
+	CurrentAmmo = MaxAmmo;
+	UE_LOG(LogTemp, Warning, TEXT("%s Reloaded! Ammo: %d/%d"), *GetName(), CurrentAmmo, MaxAmmo);
+}
+
+void AWeapon::Equip()
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s Equipped"), *GetName());
 }
