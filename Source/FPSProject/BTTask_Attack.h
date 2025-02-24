@@ -30,9 +30,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "AI|Attack")
 	float PatternCooldown = 2.0f;
 
-	// 재장전 애니메이션 몽타주
+	// 공격 애니메이션 몽타주 (나중에 리타겟팅된 총쏘기 애니메이션용)
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	UAnimMontage* ReloadMontage;
+	UAnimMontage* ShootMontage;
 
 private:
 	float LastAttackTime = 0.0f;

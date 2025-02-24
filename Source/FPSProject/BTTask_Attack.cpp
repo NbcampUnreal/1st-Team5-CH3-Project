@@ -49,13 +49,11 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
     // 버스트 완료 체크
     if (CurrentBurstTarget == 0)
     {
-    // 버스트 완료 후 초기화
-    LastAttackTime = CurrentTime;
-    
-    // 여기에 재장전/휴식 애니메이션 추가 가능
-    EnemyCharacter->PlayAnimation(ReloadMontage);  // 나중에 구현
-    
-    UE_LOG(LogTemp, Warning, TEXT("Burst complete, playing reload animation"));
+        LastAttackTime = CurrentTime;
+        
+        EnemyCharacter->PlayAnimation(ShootMontage);  
+        
+        UE_LOG(LogTemp, Warning, TEXT("Burst complete, playing shoot animation"));
     }
 
     return EBTNodeResult::Succeeded;

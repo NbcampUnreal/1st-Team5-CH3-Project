@@ -33,6 +33,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "AI|Combat")
     float GetAttackRange() const { return AttackRange; }
 
+    // 애니메이션 상태를 public으로 이동
+    UPROPERTY(BlueprintReadWrite, Category = "Animation")
+    bool bIsChasing = false;
+
 protected:
     virtual void BeginPlay() override;
 
