@@ -32,5 +32,8 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
     UInputAction* SprintAction;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+    UInputAction* CrouchAction;
+
     virtual void BeginPlay() override;
 };
