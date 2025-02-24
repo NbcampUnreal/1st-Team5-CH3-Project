@@ -2,56 +2,50 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Camera/CameraComponent.h"
-#include "Components/CapsuleComponent.h"
-#include "FPSProjectile.h"
-#include "GameFramework/PlayerController.h" 
-#include "Kismet/GameplayStatics.h" 
 #include "FPSCharacter.generated.h"
+
+class USpringArmComponent;
+class UCameraComponent;
+// Enhanced Input¿¡¼­ ¾×¼Ç °ªÀ» ¹ÞÀ» ¶§ »ç¿ëÇÏ´Â ±¸Á¶Ã¼
+struct FInputActionValue;
 
 UCLASS()
 class FPSPROJECT_API AFPSCharacter : public ACharacter
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
-
-    AFPSCharacter();
+	AFPSCharacter();
 
 protected:
-    virtual void BeginPlay() override;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	USpringArmComponent* SpringArmComp;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	UCameraComponent* CameraComp;
 
-    UPROPERTY(EditDefaultsOnly, Category = Projectile)
-    TSubclassOf<class AFPSProjectile> ProjectileClass;
+	// ÀÌµ¿ ¼Óµµ °ü·Ã ÇÁ·ÎÆÛÆ¼µé
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float NormalSpeed; // ±âº» °È±â ¼Óµµ
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float SprintSpeedMultiplier;  // "±âº» ¼Óµµ" ´ëºñ ¸î ¹è·Î ºü¸£°Ô ´Þ¸±Áö °áÁ¤
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+	float SprintSpeed; 	// ½ÇÁ¦ ½ºÇÁ¸°Æ® ¼Óµµ
 
-public:
-    virtual void Tick(float DeltaTime) override;
-    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	// ÀÔ·Â ¹ÙÀÎµùÀ» Ã³¸®ÇÒ ÇÔ¼ö
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-    UFUNCTION()
-    void MoveForward(float Value);
-
-    UFUNCTION()
-    void MoveRight(float Value);
-
-    UFUNCTION()
-    void StartJump();
-
-    UFUNCTION()
-    void StopJump();
-
-    UFUNCTION()
-    void Fire(); //  HUD ï¿½ï¿½ï¿½Ó°ï¿½ ï¿½ï¿½Ä¡ï¿½Ï´ï¿½ Fire ï¿½Ô¼ï¿½
-
-    // FPS Ä«ï¿½Þ¶ï¿½
-    UPROPERTY(VisibleAnywhere)
-    UCameraComponent* FPSCameraComponent;
-
-    // ï¿½ï¿½ï¿½ï¿½Äª ï¿½Þ½ï¿½(ï¿½ï¿½)ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î¿¡ï¿½Ô¸ï¿½ ï¿½ï¿½ï¿½Ô´Ï´ï¿½.
-    UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-    USkeletalMeshComponent* FPSMesh;
-
-    // Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½Ä¡ï¿½Îºï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½.
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-    FVector MuzzleOffset;
+	// IA_Move¿Í IA_Jump µîÀ» Ã³¸®ÇÒ ÇÔ¼ö ¿øÇü
+// Enhanced Input¿¡¼­ ¾×¼Ç °ªÀº FInputActionValue·Î Àü´ÞµË´Ï´Ù.
+	UFUNCTION()
+	void Move(const FInputActionValue& value);
+	UFUNCTION()
+	void StartJump(const FInputActionValue& value);
+	UFUNCTION()
+	void StopJump(const FInputActionValue& value);
+	UFUNCTION()
+	void Look(const FInputActionValue& value);
+	UFUNCTION()
+	void StartSprint(const FInputActionValue& value);
+	UFUNCTION()
+	void StopSprint(const FInputActionValue& value);
 };

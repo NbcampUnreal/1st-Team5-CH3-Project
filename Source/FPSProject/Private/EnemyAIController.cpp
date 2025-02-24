@@ -95,7 +95,7 @@ void AEnemyAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActor
                 Enemy->bIsChasing = bCanSeePlayer;
             }
             
-            if (BlackboardComponent)
+           if (BlackboardComponent)
             {
                 BlackboardComponent->SetValueAsObject("TargetActor", bCanSeePlayer ? Player : nullptr);
                 BlackboardComponent->SetValueAsBool("CanSeePlayer", bCanSeePlayer);
