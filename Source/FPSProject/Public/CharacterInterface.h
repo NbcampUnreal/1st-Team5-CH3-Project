@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -24,11 +22,11 @@ class FPSPROJECT_API ICharacterInterface
 	
 public:
   
-        virtual void TakeDamage(float DamageAmount) = 0;  // ÇÇ°Ý Ã³¸®
-        virtual void Die() = 0;  // »ç¸Á Ã³¸®
-        virtual void Attack() = 0;  // °ø°Ý ½ÇÇà
-        virtual void MoveTo(FVector TargetLocation) = 0;  // ¸ñÇ¥ À§Ä¡·Î ÀÌµ¿
-        virtual void PlayAnimation(UAnimMontage* Animation) = 0;  // ¾Ö´Ï¸ÞÀÌ¼Ç ½ÇÇà
-        virtual bool IsAlive() const = 0;  // »ýÁ¸ ¿©ºÎ Ã¼Å©
+        virtual void TakeDamage(float DamageAmount) = 0;  // ï¿½Ç°ï¿½ Ã³ï¿½ï¿½
+        virtual void Die() = 0;  // ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
+        virtual void Attack() = 0;  // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        virtual void MoveTo(FVector TargetLocation) = 0;  // ï¿½ï¿½Ç¥ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Ìµï¿½
+        virtual void PlayAnimation(UAnimMontage* Animation) = 0;  // ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½ï¿½
+        virtual bool IsAlive() const = 0;  // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã¼Å©
 
 };

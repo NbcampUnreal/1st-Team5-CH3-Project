@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -6,8 +5,8 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "FPSProjectile.h"
-#include "GameFramework/PlayerController.h" //  APlayerController »ç¿ë
-#include "Kismet/GameplayStatics.h" //  DeprojectScreenToWorld »ç¿ë
+#include "GameFramework/PlayerController.h" 
+#include "Kismet/GameplayStatics.h" 
 #include "FPSCharacter.generated.h"
 
 UCLASS()
@@ -16,13 +15,12 @@ class FPSPROJECT_API AFPSCharacter : public ACharacter
     GENERATED_BODY()
 
 public:
-    //ÀÌ Ä³¸¯ÅÍÀÇ ÇÁ·ÎÆÛÆ¼¿¡ Àû¿ëµÇ´Â µðÆúÆ®°ª ¼³Á¤
+
     AFPSCharacter();
 
 protected:
     virtual void BeginPlay() override;
 
-    // ½ºÆùÇÒ ¹ß»çÃ¼ Å¬·¡½ºÀÔ´Ï´Ù.
     UPROPERTY(EditDefaultsOnly, Category = Projectile)
     TSubclassOf<class AFPSProjectile> ProjectileClass;
 
@@ -43,17 +41,17 @@ public:
     void StopJump();
 
     UFUNCTION()
-    void Fire(); //  HUD ¿¡ÀÓ°ú ÀÏÄ¡ÇÏ´Â Fire ÇÔ¼ö
+    void Fire(); //  HUD ï¿½ï¿½ï¿½Ó°ï¿½ ï¿½ï¿½Ä¡ï¿½Ï´ï¿½ Fire ï¿½Ô¼ï¿½
 
-    // FPS Ä«¸Þ¶ó
+    // FPS Ä«ï¿½Þ¶ï¿½
     UPROPERTY(VisibleAnywhere)
     UCameraComponent* FPSCameraComponent;
 
-    // ÀÏÀÎÄª ¸Þ½Ã(ÆÈ)·Î, ¼ÒÀ¯ ÇÃ·¹ÀÌ¾î¿¡°Ô¸¸ º¸ÀÔ´Ï´Ù.
+    // ï¿½ï¿½ï¿½ï¿½Äª ï¿½Þ½ï¿½(ï¿½ï¿½)ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î¿¡ï¿½Ô¸ï¿½ ï¿½ï¿½ï¿½Ô´Ï´ï¿½.
     UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
     USkeletalMeshComponent* FPSMesh;
 
-    // Ä«¸Þ¶ó À§Ä¡·ÎºÎÅÍÀÇ ÃÑ±¸ ¿ÀÇÁ¼ÂÀÔ´Ï´Ù.
+    // Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½Ä¡ï¿½Îºï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
     FVector MuzzleOffset;
 };

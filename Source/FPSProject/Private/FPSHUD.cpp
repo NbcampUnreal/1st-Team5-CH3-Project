@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "FPSHUD.h"
@@ -10,19 +10,19 @@ void AFPSHUD::DrawHUD()
 
     if (CrosshairTexture)
     {
-        // È­¸é Áß¾Ó ÁÂÇ¥ °è»ê
+        // È­ï¿½ï¿½ ï¿½ß¾ï¿½ ï¿½ï¿½Ç¥ ï¿½ï¿½ï¿½
         float CenterX = Canvas->ClipX * 0.5f;
         float CenterY = Canvas->ClipY * 0.57f;
 
-        // Å©·Î½ºÇì¾î Å©±â
+        // Å©ï¿½Î½ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½
         float TextureWidth = CrosshairTexture->GetSizeX();
         float TextureHeight = CrosshairTexture->GetSizeY();
 
-        // Å©·Î½ºÇì¾î À§Ä¡ ¼³Á¤
+        // Å©ï¿½Î½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
         float DrawX = CenterX - (TextureWidth * 0.5f);
         float DrawY = CenterY - (TextureHeight * 0.5f);
 
-        // Äµ¹ö½º¿¡ Å©·Î½ºÇì¾î ÅØ½ºÃ³¸¦ ±×¸²
+        // Äµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å©ï¿½Î½ï¿½ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ï¿½ï¿½ ï¿½×¸ï¿½
         DrawTexture(CrosshairTexture, DrawX, DrawY, TextureWidth, TextureHeight, 0, 0, 1, 1);
     }
 }

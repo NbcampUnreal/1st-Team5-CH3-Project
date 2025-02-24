@@ -2,12 +2,12 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 
-// µðÆúÆ®°ª ¼³Á¤
+// ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 AFPSCharacter::AFPSCharacter()
 {
     PrimaryActorTick.bCanEverTick = true;
 
-    // ÀÏÀÎÄª Ä«¸Þ¶ó ÄÄÆ÷³ÍÆ®¸¦ »ý¼ºÇÕ´Ï´Ù.
+    // ï¿½ï¿½ï¿½ï¿½Äª Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     FPSCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
     check(FPSCameraComponent != nullptr);
     FPSCameraComponent->SetupAttachment(CastChecked<USceneComponent, UCapsuleComponent>(GetCapsuleComponent()));
@@ -24,7 +24,7 @@ AFPSCharacter::AFPSCharacter()
     GetMesh()->SetOwnerNoSee(true);
 }
 
-// °ÔÀÓ ½ÃÀÛ ¶Ç´Â ½ºÆù ½Ã È£Ãâ
+// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ È£ï¿½ï¿½
 void AFPSCharacter::BeginPlay()
 {
     Super::BeginPlay();
@@ -32,13 +32,13 @@ void AFPSCharacter::BeginPlay()
     GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("We are using FPSCharacter."));
 }
 
-// ÇÁ·¹ÀÓ¸¶´Ù È£Ãâ
+// ï¿½ï¿½ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ È£ï¿½ï¿½
 void AFPSCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 }
 
-// ÇÔ¼ö ±â´ÉÀ» ÀÔ·Â¿¡ ¹ÙÀÎµùÇÏ±â À§ÇØ È£Ãâ
+// ï¿½Ô¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·Â¿ï¿½ ï¿½ï¿½ï¿½Îµï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½
 void AFPSCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -77,34 +77,34 @@ void AFPSCharacter::Fire()
 {
     if (ProjectileClass)
     {
-        // ¹ß»ç À§Ä¡ °è»ê: Ä«¸Þ¶óÀÇ À§Ä¡¿Í È¸Àü
+        // ï¿½ß»ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½: Ä«ï¿½Þ¶ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ È¸ï¿½ï¿½
         FVector CameraLocation;
         FRotator CameraRotation;
         GetActorEyesViewPoint(CameraLocation, CameraRotation);
 
-        // MuzzleOffsetÀ» ¼³Á¤ÇÏ¿© Ä«¸Þ¶ó ¾Õ¿¡¼­ ¹ß»çÃ¼¸¦ ¹ß»ç
+        // MuzzleOffsetï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½Õ¿ï¿½ï¿½ï¿½ ï¿½ß»ï¿½Ã¼ï¿½ï¿½ ï¿½ß»ï¿½
         MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
         FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
 
-        // ¹ß»çÃ¼ ¹ß»ç °¢µµ
+        // ï¿½ß»ï¿½Ã¼ ï¿½ß»ï¿½ ï¿½ï¿½ï¿½ï¿½
         FRotator MuzzleRotation = CameraRotation;
         MuzzleRotation.Pitch += 10.0f;
 
-        // È­¸é Áß¾ÓÀÇ Å©·Î½ºÇì¾î¸¦ ±âÁØÀ¸·Î ¹ß»ç
+        // È­ï¿½ï¿½ ï¿½ß¾ï¿½ï¿½ï¿½ Å©ï¿½Î½ï¿½ï¿½ï¿½î¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½
         APlayerController* PlayerController = Cast<APlayerController>(GetController());
         if (PlayerController)
         {
             FVector MouseWorldLocation, MouseWorldDirection;
-            float ScreenCenterX = GEngine->GameViewport->Viewport->GetSizeXY().X * 0.5f;  // È­¸é Áß¾Ó XÁÂÇ¥
-            float ScreenCenterY = GEngine->GameViewport->Viewport->GetSizeXY().Y * 0.5f;  // È­¸é Áß¾Ó YÁÂÇ¥
+            float ScreenCenterX = GEngine->GameViewport->Viewport->GetSizeXY().X * 0.5f;  // È­ï¿½ï¿½ ï¿½ß¾ï¿½ Xï¿½ï¿½Ç¥
+            float ScreenCenterY = GEngine->GameViewport->Viewport->GetSizeXY().Y * 0.5f;  // È­ï¿½ï¿½ ï¿½ß¾ï¿½ Yï¿½ï¿½Ç¥
 
-            // È­¸é Áß¾ÓÀ» ¿ùµå ÁÂÇ¥·Î º¯È¯
+            // È­ï¿½ï¿½ ï¿½ß¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½ï¿½È¯
             if (PlayerController->DeprojectScreenPositionToWorld(ScreenCenterX, ScreenCenterY, MouseWorldLocation, MouseWorldDirection))
             {
-                // ¿ùµå ÁÂÇ¥ÀÇ ¹æÇâ º¤ÅÍ¸¦ °¡Á®¿Í ¹ß»çÃ¼ÀÇ ¹æÇâÀ¸·Î »ç¿ë
-                FVector LaunchDirection = MouseWorldDirection;  // È­¸éÀÇ Áß¾ÓÀ» ±âÁØÀ¸·Î ¿ùµå¿¡¼­ ¹æÇâÀ» ±¸ÇÕ´Ï´Ù.
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+                FVector LaunchDirection = MouseWorldDirection;  // È­ï¿½ï¿½ï¿½ï¿½ ï¿½ß¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½å¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
 
-                // ¹ß»çÃ¼ ½ºÆù
+                // ï¿½ß»ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½
                 UWorld* World = GetWorld();
                 if (World)
                 {
@@ -112,11 +112,11 @@ void AFPSCharacter::Fire()
                     SpawnParams.Owner = this;
                     SpawnParams.Instigator = GetInstigator();
 
-                    // ¹ß»çÃ¼¸¦ ½ºÆùÇÏ°í ÃÊ±â Åºµµ¸¦ ¼³Á¤
+                    // ï¿½ß»ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ê±ï¿½ Åºï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                     AFPSProjectile* Projectile = World->SpawnActor<AFPSProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
                     if (Projectile)
                     {
-                        // ¹ß»çÃ¼ÀÇ ÃÊ±â Åºµµ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+                        // ï¿½ß»ï¿½Ã¼ï¿½ï¿½ ï¿½Ê±ï¿½ Åºï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
                         Projectile->FireInDirection(LaunchDirection);
                     }
                 }

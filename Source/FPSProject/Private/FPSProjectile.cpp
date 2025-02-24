@@ -1,9 +1,9 @@
 #include "FPSProjectile.h"
 
-// µðÆúÆ®°ª ¼³Á¤
+// ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 AFPSProjectile::AFPSProjectile()
 {
-    // ÀÌ ¾×ÅÍ°¡ ÇÁ·¹ÀÓ¸¶´Ù Tick()À» È£ÃâÇÏµµ·Ï ¼³Á¤ÇÕ´Ï´Ù.  ÀÌ ¼³Á¤ÀÌ ÇÊ¿ä ¾ø´Â °æ¿ì ºñÈ°¼ºÈ­ÇÏ¸é ÆÛÆ÷¸Õ½º°¡ Çâ»óµË´Ï´Ù.
+    // ï¿½ï¿½ ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ Tick()ï¿½ï¿½ È£ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.  ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½È°ï¿½ï¿½È­ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ë´Ï´ï¿½.
     PrimaryActorTick.bCanEverTick = false;
 
     if (!RootComponent)
@@ -13,21 +13,21 @@ AFPSProjectile::AFPSProjectile()
 
     if (!CollisionComponent)
     {
-        // ½ºÇÇ¾î¸¦ ´Ü¼ø ÄÝ¸®Àü Ç¥ÇöÀ¸·Î »ç¿ëÇÕ´Ï´Ù.
+        // ï¿½ï¿½ï¿½Ç¾î¸¦ ï¿½Ü¼ï¿½ ï¿½Ý¸ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
-        // ½ºÇÇ¾îÀÇ ÄÝ¸®Àü ÇÁ·ÎÆÄÀÏ ÀÌ¸§À» 'Projectile'·Î ¼³Á¤ÇÕ´Ï´Ù.
+        // ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½ï¿½ ï¿½Ý¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ï¿½ï¿½ 'Projectile'ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
-        // ÄÄÆ÷³ÍÆ®°¡ ¾îµò°¡¿¡ ºÎµúÈú ¶§ È£ÃâµÇ´Â ÀÌº¥Æ®ÀÔ´Ï´Ù.
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ò°¡¿ï¿½ ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ È£ï¿½ï¿½Ç´ï¿½ ï¿½Ìºï¿½Æ®ï¿½Ô´Ï´ï¿½.
         CollisionComponent->OnComponentHit.AddDynamic(this, &AFPSProjectile::OnHit);
-        // ½ºÇÇ¾îÀÇ ÄÝ¸®Àü ¹Ý°æÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        // ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½ï¿½ ï¿½Ý¸ï¿½ï¿½ï¿½ ï¿½Ý°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         CollisionComponent->InitSphereRadius(15.0f);
-        // ·çÆ® ÄÄÆ÷³ÍÆ®°¡ ÄÝ¸®Àü ÄÄÆ÷³ÍÆ®°¡ µÇµµ·Ï ¼³Á¤ÇÕ´Ï´Ù.
+        // ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ý¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Çµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         RootComponent = CollisionComponent;
     }
 
     if (!ProjectileMovementComponent)
     {
-        // ÀÌ ÄÄÆ÷³ÍÆ®¸¦ »ç¿ëÇÏ¿© ÀÌ ¹ß»çÃ¼ÀÇ ÀÌµ¿À» ÁÖµµÇÕ´Ï´Ù.
+        // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½ ï¿½ß»ï¿½Ã¼ï¿½ï¿½ ï¿½Ìµï¿½ï¿½ï¿½ ï¿½Öµï¿½ï¿½Õ´Ï´ï¿½.
         ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
         ProjectileMovementComponent->SetUpdatedComponent(CollisionComponent);
         ProjectileMovementComponent->InitialSpeed = 3000.0f;
@@ -56,31 +56,31 @@ AFPSProjectile::AFPSProjectile()
         ProjectileMeshComponent->SetRelativeScale3D(FVector(0.09f, 0.09f, 0.09f));
         ProjectileMeshComponent->SetupAttachment(RootComponent);
     }
-    // 3ÃÊ ÈÄ ¹ß»çÃ¼¸¦ Á¦°ÅÇÕ´Ï´Ù.
+    // 3ï¿½ï¿½ ï¿½ï¿½ ï¿½ß»ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     InitialLifeSpan = 3.0f;
 }
 
-// °ÔÀÓ ½ÃÀÛ ¶Ç´Â ½ºÆù ½Ã È£Ãâ
+// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ È£ï¿½ï¿½
 void AFPSProjectile::BeginPlay()
 {
     Super::BeginPlay();
 
 }
 
-// ÇÁ·¹ÀÓ¸¶´Ù È£Ãâ
+// ï¿½ï¿½ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ È£ï¿½ï¿½
 void AFPSProjectile::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
 }
 
-// ¹ß»ç ¹æÇâÀ¸·ÎÀÇ ¹ß»çÃ¼ ¼Óµµ¸¦ ÃÊ±âÈ­ÇÏ´Â ÇÔ¼öÀÔ´Ï´Ù.
+// ï¿½ß»ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½Ã¼ ï¿½Óµï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ï¿½Ô´Ï´ï¿½.
 void AFPSProjectile::FireInDirection(const FVector& ShootDirection)
 {
     ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
 }
 
-// ¹ß»çÃ¼°¡ ¾îµò°¡¿¡ ºÎµúÈú ¶§ È£ÃâµÇ´Â ÇÔ¼öÀÔ´Ï´Ù.
+// ï¿½ß»ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ò°¡¿ï¿½ ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ È£ï¿½ï¿½Ç´ï¿½ ï¿½Ô¼ï¿½ï¿½Ô´Ï´ï¿½.
 void AFPSProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
     if (OtherActor != this && OtherComponent->IsSimulatingPhysics())
