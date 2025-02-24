@@ -50,10 +50,7 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
     if (CurrentBurstTarget == 0)
     {
         LastAttackTime = CurrentTime;
-        
-        EnemyCharacter->PlayAnimation(ShootMontage);  
-        
-        UE_LOG(LogTemp, Warning, TEXT("Burst complete, playing shoot animation"));
+        UE_LOG(LogTemp, Warning, TEXT("Burst complete"));
     }
 
     return EBTNodeResult::Succeeded;

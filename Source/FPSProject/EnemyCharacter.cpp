@@ -83,9 +83,14 @@ void AEnemyCharacter::Attack()
 {
     if (bIsDead) return;
 
-    if (AttackMontage)
+    if (ShootMontage)
     {
-        PlayAnimation(AttackMontage);
+        PlayAnimation(ShootMontage);
+        UE_LOG(LogTemp, Warning, TEXT("Playing Shoot Montage"));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ShootMontage is not set!"));
     }
 }
 
@@ -111,7 +116,24 @@ void AEnemyCharacter::PlayAnimation(UAnimMontage* Animation)
 {
     if (Animation)
     {
-        PlayAnimMontage(Animation);
+        float Duration = PlayAnimMontage(Animation);
+        UE_LOG(LogTemp, Warning, TEXT("Animation Duration: %f"), Duration);
+        
+        // 스켈레톤 정보 출력
+        if (GetMesh() && GetMesh()->GetSkeletalMeshAsset())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Character Skeleton: %s"), 
+                *GetMesh()->GetSkeletalMeshAsset()->GetSkeleton()->GetName());
+        }
+        if (Animation->GetSkeleton())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Montage Skeleton: %s"), 
+                *Animation->GetSkeleton()->GetName());
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Animation is null!"));
     }
 }
 

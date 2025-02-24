@@ -60,9 +60,9 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Combat")
     float DetectionRange;
 
-    // 공격 애니메이션 몽타주
+    // 총쏘기 애니메이션 몽타주
     UPROPERTY(EditDefaultsOnly, Category = "Animation")
-    UAnimMontage* AttackMontage;
+    UAnimMontage* ShootMontage;
 
     // 사망 애니메이션
     UPROPERTY(EditDefaultsOnly, Category = "Animation")
