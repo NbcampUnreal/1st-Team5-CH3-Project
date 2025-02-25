@@ -37,6 +37,9 @@ public:
     UPROPERTY(BlueprintReadWrite, Category = "Animation")
     bool bIsChasing = false;
 
+    // 이동 속도 업데이트
+    void UpdateMovementSpeed();
+
 protected:
     virtual void BeginPlay() override;
 
@@ -67,6 +70,13 @@ protected:
     // 사망 애니메이션
     UPROPERTY(EditDefaultsOnly, Category = "Animation")
     UAnimMontage* DeathMontage;
+
+    // protected 섹션에 추가
+    UPROPERTY(EditAnywhere, Category = "AI|Movement")
+    float PatrolSpeed = 200.0f;
+
+    UPROPERTY(EditAnywhere, Category = "AI|Movement")
+    float ChaseSpeed = 400.0f;
 
 private:
     // 사망 상태

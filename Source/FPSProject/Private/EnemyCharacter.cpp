@@ -26,6 +26,7 @@ void AEnemyCharacter::BeginPlay()
 {
     Super::BeginPlay();
     CurrentHealth = MaxHealth;
+    UpdateMovementSpeed();  // 초기 속도 설정
 }
 
 float AEnemyCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, 
@@ -139,4 +140,11 @@ void AEnemyCharacter::PlayAnimation(UAnimMontage* Animation)
 bool AEnemyCharacter::IsAlive() const
 {
     return !bIsDead;
+}
+
+// bIsChasing이 변경될 때 속도를 업데이트하는 함수 추가
+void AEnemyCharacter::UpdateMovementSpeed()
+{
+    float NewSpeed = bIsChasing ? ChaseSpeed : PatrolSpeed;
+    GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
 }

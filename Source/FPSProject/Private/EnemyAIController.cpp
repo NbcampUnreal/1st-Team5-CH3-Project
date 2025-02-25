@@ -88,6 +88,7 @@ void AEnemyAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActor
             if (AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(GetPawn()))
             {
                 Enemy->bIsChasing = bCanSeePlayer;
+                Enemy->UpdateMovementSpeed();
             }
             
            if (BlackboardComponent)
