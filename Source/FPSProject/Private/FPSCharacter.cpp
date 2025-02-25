@@ -72,7 +72,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
             }
             if (PlayerController->CrouchAction)
             {
-                EnhancedInput->BindAction(PlayerController->CrouchAction, ETriggerEvent::Triggered, this, &AFPSCharacter::StartCrouch);
+                EnhancedInput->BindAction(PlayerController->CrouchAction, ETriggerEvent::Started, this, &AFPSCharacter::StartCrouch);
                 EnhancedInput->BindAction(PlayerController->CrouchAction, ETriggerEvent::Completed, this, &AFPSCharacter::StopCrouch);
             }
 
@@ -276,6 +276,7 @@ void AFPSCharacter::Viewpoint_Transformation()
 
     UE_LOG(LogTemp, Warning, TEXT("Switched to %s"), bIsFirstPerson ? TEXT("First Person") : TEXT("Third Person"));
 }
+
 void AFPSCharacter::StartCrouch(const FInputActionValue& Value)
 {
     UE_LOG(LogTemp, Warning, TEXT("Crouch Start Pressed!"));
