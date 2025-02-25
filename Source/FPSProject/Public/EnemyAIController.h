@@ -18,6 +18,21 @@ class FPSPROJECT_API AEnemyAIController : public AAIController
 
 public:
     AEnemyAIController();
+    
+    // Tick 함수 추가
+    virtual void Tick(float DeltaTime) override;
+
+    // 플레이어를 볼 수 있는지 확인하는 함수
+    UFUNCTION(BlueprintCallable, Category = "AI")
+    bool CanSeePlayer();
+
+    // 공격 범위 내에 있는지 확인하는 함수
+    UFUNCTION(BlueprintCallable, Category = "AI")
+    bool IsInAttackRange();
+
+    // 디버그 시각화 함수
+    UFUNCTION(BlueprintCallable, Category = "Debug")
+    void DrawDebugDetectionRange();
 
 protected:
     virtual void BeginPlay() override;

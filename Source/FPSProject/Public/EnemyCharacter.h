@@ -33,6 +33,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "AI|Combat")
     float GetAttackRange() const { return AttackRange; }
 
+    // 감지 범위 반환
+    UFUNCTION(BlueprintCallable, Category = "AI|Combat")
+    float GetDetectionRange() const { return DetectionRange; }
+
     // 애니메이션 상태를 public으로 이동
     UPROPERTY(BlueprintReadWrite, Category = "Animation")
     bool bIsChasing = false;
@@ -78,7 +82,28 @@ protected:
     UPROPERTY(EditAnywhere, Category = "AI|Movement")
     float ChaseSpeed = 400.0f;
 
+    // 원거리 공격 관련 변수 추가
+    UPROPERTY(EditDefaultsOnly, Category = "Combat")
+    float ProjectileSpeed = 2000.0f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Combat")
+    TSubclassOf<class AActor> ProjectileClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Combat")
+    USceneComponent* MuzzleLocation;
+
+    // 히트 이펙트
+    UPROPERTY(EditDefaultsOnly, Category = "Combat")
+    UParticleSystem* HitEffect;
+
+    // 공격 사운드
+    UPROPERTY(EditDefaultsOnly, Category = "Sound")
+    USoundBase* AttackSound;
+
 private:
     // 사망 상태
     bool bIsDead;
+
+    // 원거리 공격 함수
+    void FireProjectile();
 };
