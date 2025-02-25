@@ -98,17 +98,16 @@ void AEnemyCharacter::MoveTo(FVector TargetLocation)
 {
     if (bIsDead) return;
 
-    // AI 컨트롤러를 통한 이동
-    AController* AIController = GetController();
+    AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController());
     if (AIController)
     {
-        // 간단한 이동 구현
-        SetActorLocation(FMath::VInterpTo(
-            GetActorLocation(),
-            TargetLocation,
-            GetWorld()->GetDeltaSeconds(),
-            2.0f
-        ));
+        // AI 네비게이션 시스템을 사용한 이동
+        AIController->MoveToLocation(TargetLocation, -1.0f);
+        UE_LOG(LogTemp, Warning, TEXT("Moving to location: %s"), *TargetLocation.ToString());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("AI Controller is not valid!"));
     }
 }
 
