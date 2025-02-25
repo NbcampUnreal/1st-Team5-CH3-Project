@@ -4,23 +4,37 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "TimerManager.h"
+#include "CharacterInterface.h"
+
+// 생성자
 AFPSCharacter::AFPSCharacter()
 {
+    // Crouch 기능 활성화
+    GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+
     PrimaryActorTick.bCanEverTick = false;
 
+    // 스프링 암 컴포넌트 생성 및 설정
     SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
     SpringArmComp->SetupAttachment(RootComponent);
     SpringArmComp->TargetArmLength = 300.0f;
     SpringArmComp->bUsePawnControlRotation = true;
 
+    // 카메라 컴포넌트 생성 및 설정
     CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
     CameraComp->bUsePawnControlRotation = false;
 
-    NormalSpeed = 300.0f;
+    // 이동 속도 설정
+    NormalSpeed = 400.0f;
     SprintSpeedMultiplier = 2.0f;
     SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
 
+    // 체력 초기화
+    Health = 100.0f;
+
+    // 기본 이동 속도 설정
     GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 }
 
@@ -28,168 +42,228 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-    // Enhanced InputComponent로 캐스팅
     if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
     {
-        // IA를 가져오기 위해 현재 소유 중인 Controller를 AFPSPlayerController로 캐스팅
-        if (AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(GetController()))
+        AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(GetController());
+        if (PlayerController)
         {
             if (PlayerController->MoveAction)
             {
-                // IA_Move 액션 키를 "키를 누르고 있는 동안" Move() 호출
-                EnhancedInput->BindAction(
-                    PlayerController->MoveAction,
-                    ETriggerEvent::Triggered,
-                    this,
-                    &AFPSCharacter::Move
-                );
+                EnhancedInput->BindAction(PlayerController->MoveAction, ETriggerEvent::Triggered, this, &AFPSCharacter::Move);
             }
-
             if (PlayerController->JumpAction)
             {
-                // IA_Jump 액션 키를 "키를 누르고 있는 동안" StartJump() 호출
-                EnhancedInput->BindAction(
-                    PlayerController->JumpAction,
-                    ETriggerEvent::Triggered,
-                    this,
-                    &AFPSCharacter::StartJump
-                );
-
-                // IA_Jump 액션 키에서 "손을 뗀 순간" StopJump() 호출
-                EnhancedInput->BindAction(
-                    PlayerController->JumpAction,
-                    ETriggerEvent::Completed,
-                    this,
-                    &AFPSCharacter::StopJump
-                );
+                EnhancedInput->BindAction(PlayerController->JumpAction, ETriggerEvent::Triggered, this, &AFPSCharacter::StartJump);
+                EnhancedInput->BindAction(PlayerController->JumpAction, ETriggerEvent::Completed, this, &AFPSCharacter::StopJump);
             }
-
             if (PlayerController->LookAction)
             {
-                // IA_Look 액션 마우스가 "움직일 때" Look() 호출
-                EnhancedInput->BindAction(
-                    PlayerController->LookAction,
-                    ETriggerEvent::Triggered,
-                    this,
-                    &AFPSCharacter::Look
-                );
+                EnhancedInput->BindAction(PlayerController->LookAction, ETriggerEvent::Triggered, this, &AFPSCharacter::Look);
             }
-
             if (PlayerController->SprintAction)
             {
-                // IA_Sprint 액션 키를 "누르고 있는 동안" StartSprint() 호출
-                EnhancedInput->BindAction(
-                    PlayerController->SprintAction,
-                    ETriggerEvent::Triggered,
-                    this,
-                    &AFPSCharacter::StartSprint
-                );
-                // IA_Sprint 액션 키에서 "손을 뗀 순간" StopSprint() 호출
-                EnhancedInput->BindAction(
-                    PlayerController->SprintAction,
-                    ETriggerEvent::Completed,
-                    this,
-                    &AFPSCharacter::StopSprint
-                );
+                EnhancedInput->BindAction(PlayerController->SprintAction, ETriggerEvent::Triggered, this, &AFPSCharacter::StartSprint);
+                EnhancedInput->BindAction(PlayerController->SprintAction, ETriggerEvent::Completed, this, &AFPSCharacter::StopSprint);
             }
+            if (PlayerController->Viewpoint_TransformationAction) // 여기가 중요!
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Binding Viewpoint_Transformation Action!"));
+                EnhancedInput->BindAction(PlayerController->Viewpoint_TransformationAction, ETriggerEvent::Triggered, this, &AFPSCharacter::Viewpoint_Transformation);
+            }
+            if (PlayerController->CrouchAction)
+            {
+                EnhancedInput->BindAction(PlayerController->CrouchAction, ETriggerEvent::Triggered, this, &AFPSCharacter::StartCrouch);
+                EnhancedInput->BindAction(PlayerController->CrouchAction, ETriggerEvent::Completed, this, &AFPSCharacter::StopCrouch);
+            }
+
         }
     }
 }
 
+
+
+// 현재 체력을 반환
+float AFPSCharacter::GetHealth() const
+{
+    return Health;
+}
+
+// 이동 처리
 void AFPSCharacter::Move(const FInputActionValue& value)
 {
-    // 컨트롤러가 있어야 방향 계산이 가능
     if (!Controller) return;
 
-    // Value는 Axis2D로 설정된 IA_Move의 입력값 (WASD)을 담고 있음
-// 예) (X=1, Y=0) → 전진 / (X=-1, Y=0) → 후진 / (X=0, Y=1) → 오른쪽 / (X=0, Y=-1) → 왼쪽
     const FVector2D MoveInput = value.Get<FVector2D>();
 
     if (!FMath::IsNearlyZero(MoveInput.X))
     {
-        // 캐릭터가 바라보는 방향(정면)으로 X축 이동
         AddMovementInput(GetActorForwardVector(), MoveInput.X);
     }
 
     if (!FMath::IsNearlyZero(MoveInput.Y))
     {
-        // 캐릭터의 오른쪽 방향으로 Y축 이동
         AddMovementInput(GetActorRightVector(), MoveInput.Y);
     }
 }
 
+// 점프 시작
 void AFPSCharacter::StartJump(const FInputActionValue& value)
 {
-    // Jump 함수는 Character가 기본 제공
     if (value.Get<bool>())
     {
         Jump();
+        TakeDamage(10);
+        UE_LOG(LogTemp, Warning, TEXT("Current Health: %f"), Health);
     }
 }
 
+// 점프 종료
 void AFPSCharacter::StopJump(const FInputActionValue& value)
 {
-    // StopJumping 함수도 Character가 기본 제공
     if (!value.Get<bool>())
     {
         StopJumping();
     }
 }
 
+// 마우스 이동
 void AFPSCharacter::Look(const FInputActionValue& value)
 {
-    // 마우스의 X, Y 움직임을 2D 축으로 가져옴
     FVector2D LookInput = value.Get<FVector2D>();
-
-    // X는 좌우 회전 (Yaw), Y는 상하 회전 (Pitch)
-    // 좌우 회전
     AddControllerYawInput(LookInput.X);
-    // 상하 회전
     AddControllerPitchInput(LookInput.Y);
 }
 
+// 달리기 시작
 void AFPSCharacter::StartSprint(const FInputActionValue& value)
 {
-    // Shift 키를 누른 순간 이 함수가 호출된다고 가정
-    // 스프린트 속도를 적용
     if (GetCharacterMovement())
     {
         GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
     }
 }
 
+// 달리기 종료
 void AFPSCharacter::StopSprint(const FInputActionValue& value)
 {
-    // Shift 키를 뗀 순간 이 함수가 호출
-   // 평상시 속도로 복귀
     if (GetCharacterMovement())
     {
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
     }
 }
 
+// 데미지를 받았을 때 체력 감소
+void AFPSCharacter::TakeDamage(float DamageAmount)
+{
+    if (!bIsAlive) return;
 
-void AFPSCharacter::TakeDamage(float DamageAmount) {
-	// 데미지 처리 로직 추가
+    Health -= DamageAmount;
+
+    UE_LOG(LogTemp, Warning, TEXT("Character took damage: %f, Current Health: %f"), DamageAmount, Health);
+
+    if (Health <= 0)
+    {
+        Die();
+    }
 }
 
-void AFPSCharacter::Die() {
-	// 캐릭터 사망 처리 로직 추가
+// 캐릭터 사망 처리
+void AFPSCharacter::Die()
+{
+    if (!bIsAlive) return;
+
+    UE_LOG(LogTemp, Warning, TEXT("Character has died."));
+    bIsAlive = false;
+    Destroy();
 }
 
-void AFPSCharacter::Attack() {
-	// 공격 동작 처리 로직 추가
+// 공격 동작 실행
+void AFPSCharacter::Attack()
+{
+    UE_LOG(LogTemp, Warning, TEXT("Character attacked."));
 }
 
-void AFPSCharacter::MoveTo(FVector TargetLocation) {
-	// 특정 위치로 이동하는 로직 추가
+// 특정 위치로 이동
+void AFPSCharacter::MoveTo(FVector TargetLocation)
+{
+    UE_LOG(LogTemp, Warning, TEXT("Moving to location: %s"), *TargetLocation.ToString());
 }
 
-void AFPSCharacter::PlayAnimation(UAnimMontage* Animation) {
-	// 애니메이션 재생 처리 로직 추가
+// 캐릭터의 생존 여부 반환
+bool AFPSCharacter::IsAlive() const
+{
+    return bIsAlive;
 }
 
-bool AFPSCharacter::IsAlive() const {
-	// 생존 여부 반환 로직 추가
-	return true;
+// 애니메이션 실행
+void AFPSCharacter::PlayAnimation(UAnimMontage* Animation)
+{
+    if (Animation)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Playing animation."));
+        PlayAnimMontage(Animation);
+    }
+}
+void AFPSCharacter::Viewpoint_Transformation()
+{
+    UE_LOG(LogTemp, Warning, TEXT("Viewpoint_Transformation function called!"));
+
+    bIsFirstPerson = !bIsFirstPerson;
+
+    if (!bIsFirstPerson)
+    {
+        // 1인칭 설정
+        SpringArmComp->TargetArmLength = 0.0f;
+        CameraComp->bUsePawnControlRotation = true;
+        SpringArmComp->bUsePawnControlRotation = true;
+        bUseControllerRotationYaw = true;
+
+        GetMesh()->SetOwnerNoSee(true);
+    }
+    else
+    {
+        // 3인칭으로 변경될 때 현재 카메라 방향을 캐릭터 방향으로 반영
+        AController* PlayerController = GetController();
+        if (PlayerController)
+        {
+            PlayerController->SetControlRotation(GetActorRotation()); // 현재 캐릭터 회전값으로 설정
+        }
+
+        // 3인칭 설정
+        SpringArmComp->TargetArmLength = 300.0f;
+        CameraComp->bUsePawnControlRotation = false;
+        SpringArmComp->bUsePawnControlRotation = true;
+        bUseControllerRotationYaw = true;
+
+        GetMesh()->SetOwnerNoSee(false);
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("Switched to %s"), bIsFirstPerson ? TEXT("First Person") : TEXT("Third Person"));
+}
+void AFPSCharacter::StartCrouch(const FInputActionValue& Value)
+{
+    UE_LOG(LogTemp, Warning, TEXT("Crouch Start Pressed!"));
+
+    if (GetCharacterMovement() && !bIsCrouched)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Crouch Started!"));
+
+        // 크라우치 실행
+        Crouch();
+        GetCharacterMovement()->MaxWalkSpeed = NormalSpeed * 0.5f;
+    }
+}
+
+void AFPSCharacter::StopCrouch(const FInputActionValue& Value)
+{
+    UE_LOG(LogTemp, Warning, TEXT("Crouch Stop Pressed!"));
+
+    if (GetCharacterMovement() && bIsCrouched)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Crouch Stopped!"));
+
+        // 크라우치 해제
+        UnCrouch();
+        GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+    }
 }
