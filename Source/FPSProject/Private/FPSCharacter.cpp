@@ -172,10 +172,46 @@ void AFPSCharacter::Die()
 {
     if (!bIsAlive) return;
 
-    UE_LOG(LogTemp, Warning, TEXT("Character has died."));
-    bIsAlive = false;
-    Destroy();
+    bIsAlive = false; // 캐릭터 생존 상태 변경
+    GetCharacterMovement()->DisableMovement(); // 이동 불가
+    DisableInput(Cast<APlayerController>(GetController())); // 플레이어 입력 비활성화
+
+    // 컨트롤러가 없을 경우 체크
+    APlayerController* PlayerController = Cast<APlayerController>(GetController());
+    if (PlayerController)
+    {
+        PlayerController->SetIgnoreLookInput(true); // 마우스 시점 고정
+        PlayerController->SetIgnoreMoveInput(true); // 키보드 입력도 막음
+    }
+
+    // 사망 시 카메라 위치 조정
+    if (SpringArmComp)
+    {
+        SpringArmComp->TargetArmLength = 300.0f; // 거리를 300으로 설정
+        SpringArmComp->bUsePawnControlRotation = false; // 카메라 고정
+
+        // 카메라를 캐릭터 앞쪽으로 이동
+        FVector NewCameraLocation = GetActorLocation() + GetActorForwardVector() * -100.0f; // 캐릭터 앞쪽으로 이동
+        SpringArmComp->SetWorldLocation(NewCameraLocation);
+
+        // 카메라가 정면에서 바라보도록 조정
+        CameraComp->SetRelativeRotation(FRotator(10.0f, 0.0f, 0.0f));
+    }
+
+    // 사망 애니메이션 실행
+    if (DeathMontage)
+    {
+        float MontageDuration = PlayAnimMontage(DeathMontage);
+        GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &AFPSCharacter::DestroyCharacter, MontageDuration, false);
+    }
+    else
+    {
+        // 애니메이션이 없으면 바로 삭제
+        DestroyCharacter();
+    }
 }
+
+
 
 // 공격 동작 실행
 void AFPSCharacter::Attack()
@@ -267,3 +303,9 @@ void AFPSCharacter::StopCrouch(const FInputActionValue& Value)
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
     }
 }
+
+void AFPSCharacter::DestroyCharacter()
+{
+    Destroy();
+}
+
