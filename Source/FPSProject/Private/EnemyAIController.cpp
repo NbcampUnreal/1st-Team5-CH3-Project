@@ -8,36 +8,31 @@
 
 AEnemyAIController::AEnemyAIController()
 {
-    // AI Perception Component 생성 및 설정
+    // AI Perception Component 생성
     AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComponent"));
+    
+    // Sight Config 설정
     SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightConfig"));
-
-    // 시야 설정
     if (SightConfig)
     {
-        // 기본 시야 설정 추가
-        SightConfig->SightRadius = 3000.0f;
-        SightConfig->LoseSightRadius = 3500.0f;
-        SightConfig->PeripheralVisionAngleDegrees = 120.0f;
-        
-        // 감지 설정
-        SightConfig->SetMaxAge(5.0f);
-
-        // 감지 대상 설정
+        SightConfig->SightRadius = 1000.0f;
+        SightConfig->LoseSightRadius = 1500.0f;
+        SightConfig->PeripheralVisionAngleDegrees = 90.0f;
         SightConfig->DetectionByAffiliation.bDetectEnemies = true;
-        SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
         SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
-
-        // AI Perception Component에 설정 등록
+        SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
+    }
+    
+    // Perception Component에 Sight Config 추가
+    if (AIPerceptionComponent)
+    {
         AIPerceptionComponent->ConfigureSense(*SightConfig);
         AIPerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
         AIPerceptionComponent->OnPerceptionUpdated.AddDynamic(this, &AEnemyAIController::OnPerceptionUpdated);
     }
 
-    // Behavior Tree 컴포넌트 생성
+    // BT Component와 BB Component 생성
     BehaviorTreeComponent = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
-    
-    // Blackboard 컴포넌트 생성
     BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 }
 
