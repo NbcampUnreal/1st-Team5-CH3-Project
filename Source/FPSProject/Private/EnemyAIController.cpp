@@ -10,32 +10,10 @@
 
 AEnemyAIController::AEnemyAIController()
 {
-    // AI Perception Component 생성
-    AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComponent"));
-    
-    // Sight Config 설정
-    SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightConfig"));
-    if (SightConfig)
-    {
-        SightConfig->SightRadius = 1000.0f;
-        SightConfig->LoseSightRadius = 1500.0f;
-        SightConfig->PeripheralVisionAngleDegrees = 90.0f;
-        SightConfig->DetectionByAffiliation.bDetectEnemies = true;
-        SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
-        SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
-    }
-    
-    // Perception Component에 Sight Config 추가
-    if (AIPerceptionComponent)
-    {
-        AIPerceptionComponent->ConfigureSense(*SightConfig);
-        AIPerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
-        AIPerceptionComponent->OnPerceptionUpdated.AddDynamic(this, &AEnemyAIController::OnPerceptionUpdated);
-    }
-
-    // BT Component와 BB Component 생성
     BehaviorTreeComponent = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
     BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
+
+    PrimaryActorTick.bCanEverTick = true;  // Tick 활성화
 }
 
 void AEnemyAIController::BeginPlay()
@@ -68,45 +46,35 @@ void AEnemyAIController::OnUnPossess()
     Super::OnUnPossess();
 }
 
-void AEnemyAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
+void AEnemyAIController::Tick(float DeltaTime)
 {
-    bool bCanSeePlayer = false;
+    Super::Tick(DeltaTime);
     
-    for (AActor* Actor : UpdatedActors)
+    // 매 Tick마다 플레이어 감지 상태 업데이트
+    UpdatePlayerDetection();
+    
+    // 디버그 시각화
+    #if WITH_EDITOR
+    DrawDebugDetectionRange();
+    #endif
+}
+
+void AEnemyAIController::UpdatePlayerDetection()
+{
+    bool bCanSeePlayer = CanSeePlayer();
+    APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    
+    if (BlackboardComponent)
     {
-        if (AFPSCharacter* Player = Cast<AFPSCharacter>(Actor))
-        {
-            if (AIPerceptionComponent)
-            {
-                // GetCurrentlyPerceivedActors 사용
-                TArray<AActor*> PerceivedActors;
-                AIPerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
-                bCanSeePlayer = PerceivedActors.Contains(Player);
-                
-                UE_LOG(LogTemp, Warning, TEXT("Can See Player: %s"), 
-                    bCanSeePlayer ? TEXT("True") : TEXT("False"));
-            }
-            
-            if (AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(GetPawn()))
-            {
-                Enemy->bIsChasing = bCanSeePlayer;
-                Enemy->UpdateMovementSpeed();
-            }
-            
-           if (BlackboardComponent)
-            {
-                BlackboardComponent->SetValueAsObject("TargetActor", bCanSeePlayer ? Player : nullptr);
-                BlackboardComponent->SetValueAsBool("CanSeePlayer", bCanSeePlayer);
-            }
-            break;
-        }
+        BlackboardComponent->SetValueAsObject("TargetActor", bCanSeePlayer ? PlayerPawn : nullptr);
+        BlackboardComponent->SetValueAsBool("CanSeePlayer", bCanSeePlayer);
     }
     
-    // 플레이어를 못 볼 때 상태 업데이트
-    if (!bCanSeePlayer && BlackboardComponent)
+    // Enemy 상태 업데이트
+    if (AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(GetPawn()))
     {
-        BlackboardComponent->SetValueAsObject("TargetActor", nullptr);
-        BlackboardComponent->SetValueAsBool("CanSeePlayer", false);
+        Enemy->bIsChasing = bCanSeePlayer;
+        Enemy->UpdateMovementSpeed();
     }
 }
 
@@ -123,13 +91,16 @@ bool AEnemyAIController::CanSeePlayer()
     // 감지 범위 내에 있는지 확인 (360도 원형 감지)
     if (Distance <= EnemyChar->GetDetectionRange())
     {
-        // 시야선 체크
+        // 시야선 체크 (벽이나 장애물 체크)
         FHitResult HitResult;
         FCollisionQueryParams QueryParams;
         QueryParams.AddIgnoredActor(EnemyChar);
         
         FVector StartLocation = EnemyChar->GetActorLocation();
+        StartLocation.Z += 50.0f;  // 캐릭터 중심부에서 체크하도록 높이 조정
+        
         FVector EndLocation = PlayerPawn->GetActorLocation();
+        EndLocation.Z += 50.0f;    // 플레이어 중심부 체크
         
         // 시야선이 막혀있는지 확인
         bool bHasLineOfSight = !GetWorld()->LineTraceSingleByChannel(
@@ -140,20 +111,7 @@ bool AEnemyAIController::CanSeePlayer()
             QueryParams
         );
         
-        if (bHasLineOfSight)
-        {
-            // 플레이어가 감지되면 즉시 그 방향으로 회전
-            FVector Direction = (PlayerPawn->GetActorLocation() - EnemyChar->GetActorLocation()).GetSafeNormal();
-            FRotator TargetRotation = Direction.Rotation();
-            EnemyChar->SetActorRotation(FMath::RInterpTo(
-                EnemyChar->GetActorRotation(), 
-                TargetRotation, 
-                GetWorld()->GetDeltaSeconds(), 
-                5.0f  // 회전 속도
-            ));
-            
-            return true;
-        }
+        return bHasLineOfSight;
     }
     
     return false;
@@ -262,14 +220,4 @@ void AEnemyAIController::DrawDebugDetectionRange()
             );
         }
     }
-}
-
-void AEnemyAIController::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-    
-    // 디버그 모드에서만 시각화
-    #if WITH_EDITOR
-    DrawDebugDetectionRange();
-    #endif
 }
