@@ -7,6 +7,7 @@ class AEnemyAIController;
 #include "CharacterInterface.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Controller.h"
+#include "FPSCharacter.h"
 #include "EnemyCharacter.generated.h"
 
 UCLASS()
@@ -100,10 +101,22 @@ protected:
     UPROPERTY(EditDefaultsOnly, Category = "Sound")
     USoundBase* AttackSound;
 
+    // 공격 애니메이션 몽타주
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+    UAnimMontage* AttackMontage;
+
+    // 공격 관련 변수들
+    UPROPERTY(EditAnywhere, Category = "AI|Combat")
+    float AttackCooldown = 2.0f;    // 기본 공격 쿨타임
+
 private:
     // 사망 상태
     bool bIsDead;
 
-    // 원거리 공격 함수
+    // 원거리 공격 함수 (나중에 구현할 예정)
     void FireProjectile();
+
+    // 공격 관련 변수
+    FTimerHandle AttackTimerHandle;
+    bool bCanAttack = true;
 };

@@ -82,26 +82,57 @@ void AEnemyCharacter::Die()
 
 void AEnemyCharacter::Attack()
 {
-    if (bIsDead) return;
+    if (bIsDead || !bCanAttack) return;
 
-    // 원거리 공격 구현
-    FireProjectile();
-    
-    // 공격 사운드 재생
-    if (AttackSound)
+    // 플레이어 찾기
+    AFPSCharacter* Player = Cast<AFPSCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+    if (!Player) return;
+
+    // 거리 체크
+    float DistanceToPlayer = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
+    if (DistanceToPlayer > AttackRange)
     {
-        UGameplayStatics::PlaySoundAtLocation(this, AttackSound, GetActorLocation());
+        return;
     }
+
+    // 발사 위치 계산 (디버그 라인용)
+    FVector MuzzlePos = GetActorLocation() + GetActorForwardVector() * 100.0f + FVector(0, 0, 90.0f);
+    FVector Direction = (Player->GetActorLocation() - MuzzlePos).GetSafeNormal();
+    
+    // 디버그 라인 그리기
+    DrawDebugLine(GetWorld(), MuzzlePos, MuzzlePos + Direction * 10000.0f, FColor::Cyan, false, 1.0f, 0, 1.0f);
+
+    // 공격 애니메이션
+    if (AttackMontage)
+    {
+        PlayAnimMontage(AttackMontage);
+    }
+
+    // 데미지 처리
+    Player->TakeDamage(AttackDamage);
+
+    // 디버그 로그
+    UE_LOG(LogTemp, Warning, TEXT("Enemy attacked! Distance: %.1f, Damage: %.1f"), DistanceToPlayer, AttackDamage);
+
+    // 쿨다운 적용
+    bCanAttack = false;
+    GetWorld()->GetTimerManager().SetTimer(
+        AttackTimerHandle,
+        [this]() { bCanAttack = true; },
+        AttackCooldown,
+        false
+    );
 }
 
+/* 추후 발사체 시스템 구현을 위해 주석처리
 void AEnemyCharacter::FireProjectile()
 {
     // 플레이어 위치 확인
     AActor* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
     if (!Player) return;
     
-    // 발사 위치 및 방향 계산
-    FVector MuzzlePos = GetActorLocation() + GetActorForwardVector() * 100.0f + FVector(0, 0, 50.0f);
+    // 발사 위치를 캐릭터 가슴 높이로 수정
+    FVector MuzzlePos = GetActorLocation() + GetActorForwardVector() * 100.0f + FVector(0, 0, 90.0f);  // Z값을 90으로 증가
     
     // 메시에 소켓이 있으면 소켓 위치 사용
     if (GetMesh()->DoesSocketExist(FName("MuzzleSocket")))
@@ -115,13 +146,13 @@ void AEnemyCharacter::FireProjectile()
     float Spread = 0.05f;
     Direction = FMath::VRandCone(Direction, Spread);
     
+    // 디버그 라인 그리기 (개발 중에만)
+    DrawDebugLine(GetWorld(), MuzzlePos, MuzzlePos + Direction * 10000.0f, FColor::Cyan, false, 1.0f, 0, 1.0f);
+    
     // 히트스캔 방식으로 즉시 데미지 적용
     FHitResult HitResult;
     FCollisionQueryParams QueryParams;
     QueryParams.AddIgnoredActor(this);
-    
-    // 디버그 라인 그리기 (개발 중에만)
-    DrawDebugLine(GetWorld(), MuzzlePos, MuzzlePos + Direction * 10000.0f, FColor::Red, false, 1.0f, 0, 1.0f);
     
     if (GetWorld()->LineTraceSingleByChannel(HitResult, MuzzlePos, MuzzlePos + Direction * 10000.0f, ECC_Pawn, QueryParams))
     {
@@ -130,7 +161,7 @@ void AEnemyCharacter::FireProjectile()
             UGameplayStatics::ApplyDamage(Player, AttackDamage, GetController(), this, UDamageType::StaticClass());
             UE_LOG(LogTemp, Warning, TEXT("Enemy hit player with attack for %f damage"), AttackDamage);
             
-            // 히트 이펙트 (선택적)
+            // 히트 이펙트
             if (HitEffect)
             {
                 UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffect, HitResult.Location, FRotator::ZeroRotator, true);
@@ -138,6 +169,7 @@ void AEnemyCharacter::FireProjectile()
         }
     }
 }
+*/
 
 void AEnemyCharacter::MoveTo(FVector TargetLocation)
 {
