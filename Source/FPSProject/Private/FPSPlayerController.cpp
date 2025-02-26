@@ -1,7 +1,7 @@
 #include "FPSPlayerController.h"
-#include "EnhancedInputSubsystems.h"   // Enhanced Input을 위한 Subsystem 헤더
-#include "EnhancedInputComponent.h"    // Enhanced Input Component 헤더
-#include "FPSCharacter.h"    // 추가
+#include "EnhancedInputSubsystems.h"   
+#include "EnhancedInputComponent.h"    
+#include "FPSCharacter.h"   
 
 AFPSPlayerController::AFPSPlayerController()
     : InputMappingContext(nullptr),
@@ -10,7 +10,7 @@ AFPSPlayerController::AFPSPlayerController()
     LookAction(nullptr),
     SprintAction(nullptr),
     CrouchAction(nullptr),
-    Viewpoint_TransformationAction(nullptr) // 추가
+    Viewpoint_TransformationAction(nullptr) 
 {
 }
 
@@ -24,13 +24,11 @@ void AFPSPlayerController::BeginPlay()
         {
             if (InputMappingContext)
             {
-                // Enhanced Input Subsystem에 Input Mapping Context 추가
                 Subsystem->AddMappingContext(InputMappingContext, 0);
-               // UE_LOG(LogTemp, Warning, TEXT("Input Mapping Context 추가 완료!"));  // 수정됨
             }
             else
             {
-                UE_LOG(LogTemp, Error, TEXT("InputMappingContext가 설정되지 않았습니다!"));
+                UE_LOG(LogTemp, Error, TEXT("InputMappingContext"));
             }
         }
     }
