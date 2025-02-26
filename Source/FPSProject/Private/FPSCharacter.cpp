@@ -22,6 +22,12 @@ AFPSCharacter::AFPSCharacter()
     CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
     CameraComp->bUsePawnControlRotation = false;
 
+    // 1인칭 캐릭터 모델
+    FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
+    FirstPersonMesh->SetupAttachment(CameraComp);
+    FirstPersonMesh->bOwnerNoSee = true; // 3인칭일 때 숨김
+
+
     NormalSpeed = 400.0f;
     SprintSpeedMultiplier = 2.0f;
     SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
@@ -224,6 +230,7 @@ void AFPSCharacter::PlayAnimation(UAnimMontage* Animation)
         PlayAnimMontage(Animation);
     }
 }
+
 void AFPSCharacter::Viewpoint_Transformation()
 {
     UE_LOG(LogTemp, Warning, TEXT("Viewpoint_Transformation function called!"));
@@ -232,34 +239,48 @@ void AFPSCharacter::Viewpoint_Transformation()
 
     if (!bIsFirstPerson)
     {
-        // 1��Ī ����
+        // 1인칭 모드
         SpringArmComp->TargetArmLength = 0.0f;
         CameraComp->bUsePawnControlRotation = true;
         SpringArmComp->bUsePawnControlRotation = true;
         bUseControllerRotationYaw = true;
 
+        // 1인칭 모델 보이기, 3인칭 모델 숨기기
+        FirstPersonMesh->SetOwnerNoSee(false);
         GetMesh()->SetOwnerNoSee(true);
+
+        // 3인칭 모델 그림자 제거
+        GetMesh()->bCastDynamicShadow = false;
+        GetMesh()->CastShadow = false;
     }
     else
     {
-        // 3��Ī���� ����� �� ���� ī�޶� ������ ĳ���� �������� �ݿ�
+        // 3인칭 모드
         AController* PlayerController = GetController();
         if (PlayerController)
         {
-            PlayerController->SetControlRotation(GetActorRotation()); // ���� ĳ���� ȸ�������� ����
+            PlayerController->SetControlRotation(GetActorRotation());
         }
 
-        // 3��Ī ����
         SpringArmComp->TargetArmLength = 300.0f;
         CameraComp->bUsePawnControlRotation = false;
         SpringArmComp->bUsePawnControlRotation = true;
         bUseControllerRotationYaw = true;
 
+        // 1인칭 모델 숨기기, 3인칭 모델 보이기
+        FirstPersonMesh->SetOwnerNoSee(true);
         GetMesh()->SetOwnerNoSee(false);
+
+        // 3인칭 모델 그림자 다시 활성화
+        GetMesh()->bCastDynamicShadow = true;
+        GetMesh()->CastShadow = true;
     }
 
     UE_LOG(LogTemp, Warning, TEXT("Switched to %s"), bIsFirstPerson ? TEXT("First Person") : TEXT("Third Person"));
 }
+
+
+
 
 void AFPSCharacter::StartCrouch(const FInputActionValue& Value)
 {
