@@ -2,6 +2,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnemyAIController.h"
+#include "BasicGameInstance.h"
 
 AEnemyCharacter::AEnemyCharacter()
 {
@@ -84,55 +85,43 @@ void AEnemyCharacter::Attack()
 {
     if (bIsDead || !bCanAttack) return;
 
-    // 플레이어 찾기
-    AFPSCharacter* Player = Cast<AFPSCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-    if (!Player) return;
-
-    // 거리 체크
-    float DistanceToPlayer = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
-    if (DistanceToPlayer > AttackRange)
+    // 플레이어 위치 확인 및 회전
+    AActor* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    if (Player)
     {
-        return;
+        // 플레이어 방향으로 즉시 회전
+        FVector Direction = (Player->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+        FRotator NewRotation = Direction.Rotation();
+        SetActorRotation(NewRotation);
     }
 
-    // 발사 위치 계산 (디버그 라인용)
-    FVector MuzzlePos = GetActorLocation() + GetActorForwardVector() * 100.0f + FVector(0, 0, 90.0f);
-    FVector Direction = (Player->GetActorLocation() - MuzzlePos).GetSafeNormal();
-    
-    // 디버그 라인 그리기
-    DrawDebugLine(GetWorld(), MuzzlePos, MuzzlePos + Direction * 10000.0f, FColor::Cyan, false, 1.0f, 0, 1.0f);
-
-    // 공격 애니메이션
-    if (AttackMontage)
-    {
-        PlayAnimMontage(AttackMontage);
-    }
-
-    // 데미지 처리
-    Player->TakeDamage(AttackDamage);
-
-    // 디버그 로그
-    UE_LOG(LogTemp, Warning, TEXT("Enemy attacked! Distance: %.1f, Damage: %.1f"), DistanceToPlayer, AttackDamage);
-
-    // 쿨다운 적용
+    // 공격 쿨다운 설정
     bCanAttack = false;
     GetWorld()->GetTimerManager().SetTimer(
-        AttackTimerHandle,
+        AttackCooldownTimer,
         [this]() { bCanAttack = true; },
-        AttackCooldown,
+        AttackCooldown,  // EnemyCharacter.h에 이미 정의된 변수 (기본값 2.0f)
         false
     );
+
+    // 원거리 공격 구현
+    FireProjectile();
+    
+    // 공격 사운드 재생
+    if (AttackSound)
+    {
+        UGameplayStatics::PlaySoundAtLocation(this, AttackSound, GetActorLocation());
+    }
 }
 
-/* 추후 발사체 시스템 구현을 위해 주석처리
 void AEnemyCharacter::FireProjectile()
 {
     // 플레이어 위치 확인
-    AActor* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
     if (!Player) return;
     
-    // 발사 위치를 캐릭터 가슴 높이로 수정
-    FVector MuzzlePos = GetActorLocation() + GetActorForwardVector() * 100.0f + FVector(0, 0, 90.0f);  // Z값을 90으로 증가
+    // 발사 위치 및 방향 계산
+    FVector MuzzlePos = GetActorLocation() + GetActorForwardVector() * 100.0f + FVector(0, 0, 50.0f);
     
     // 메시에 소켓이 있으면 소켓 위치 사용
     if (GetMesh()->DoesSocketExist(FName("MuzzleSocket")))
@@ -146,22 +135,29 @@ void AEnemyCharacter::FireProjectile()
     float Spread = 0.05f;
     Direction = FMath::VRandCone(Direction, Spread);
     
-    // 디버그 라인 그리기 (개발 중에만)
-    DrawDebugLine(GetWorld(), MuzzlePos, MuzzlePos + Direction * 10000.0f, FColor::Cyan, false, 1.0f, 0, 1.0f);
-    
     // 히트스캔 방식으로 즉시 데미지 적용
     FHitResult HitResult;
     FCollisionQueryParams QueryParams;
     QueryParams.AddIgnoredActor(this);
     
+    // 디버그 라인 그리기 (개발 중에만)
+    DrawDebugLine(GetWorld(), MuzzlePos, MuzzlePos + Direction * 10000.0f, FColor::Cyan, false, 1.0f, 0, 1.0f);
+    
     if (GetWorld()->LineTraceSingleByChannel(HitResult, MuzzlePos, MuzzlePos + Direction * 10000.0f, ECC_Pawn, QueryParams))
     {
-        if (HitResult.GetActor() == Player)
+        UE_LOG(LogTemp, Warning, TEXT("Hit something: %s"), *HitResult.GetActor()->GetName());
+        
+        if (AFPSCharacter* FPSPlayer = Cast<AFPSCharacter>(HitResult.GetActor()))
         {
-            UGameplayStatics::ApplyDamage(Player, AttackDamage, GetController(), this, UDamageType::StaticClass());
-            UE_LOG(LogTemp, Warning, TEXT("Enemy hit player with attack for %f damage"), AttackDamage);
+            // 인터페이스를 통해 데미지 전달
+            ICharacterInterface* CharacterInterface = Cast<ICharacterInterface>(FPSPlayer);
+            if (CharacterInterface)
+            {
+                CharacterInterface->TakeDamage(AttackDamage);
+                UE_LOG(LogTemp, Warning, TEXT("Hit FPSPlayer! Applying damage: %f"), AttackDamage);
+            }
             
-            // 히트 이펙트
+            // 히트 이펙트 (선택적)
             if (HitEffect)
             {
                 UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffect, HitResult.Location, FRotator::ZeroRotator, true);
@@ -169,13 +165,12 @@ void AEnemyCharacter::FireProjectile()
         }
     }
 }
-*/
 
 void AEnemyCharacter::MoveTo(FVector TargetLocation)
 {
-    if (bIsDead) return;
-
     AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController());
+    if (bIsDead || (AIController && AIController->IsInAttackRange())) return;
+
     if (AIController)
     {
         // AI 네비게이션 시스템을 사용한 이동
@@ -223,4 +218,52 @@ void AEnemyCharacter::UpdateMovementSpeed()
 {
     float NewSpeed = bIsChasing ? ChaseSpeed : PatrolSpeed;
     GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
+}
+
+void AEnemyCharacter::Sleep(float Duration)
+{
+    if (bIsDead || bIsSleeping) return;
+
+    bIsSleeping = true;
+    
+    // AI 이동 중지
+    GetCharacterMovement()->StopMovementImmediately();
+    
+    // AI 컨트롤러 비활성화
+    if (AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController()))
+    {
+        AIController->GetBrainComponent()->StopLogic("Sleeping");
+    }
+
+    // 게임 인스턴스에 수면 카운트 증가
+    if (UBasicGameInstance* GameInstance = Cast<UBasicGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        GameInstance->AddSleep();
+    }
+
+    // 지정된 시간 후에 깨어나기
+    GetWorld()->GetTimerManager().SetTimer(
+        SleepTimerHandle,
+        this,
+        &AEnemyCharacter::WakeUp,
+        Duration,
+        false
+    );
+
+    UE_LOG(LogTemp, Warning, TEXT("Enemy is now sleeping for %f seconds"), Duration);
+}
+
+void AEnemyCharacter::WakeUp()
+{
+    if (bIsDead) return;
+
+    bIsSleeping = false;
+    
+    // AI 컨트롤러 다시 활성화
+    if (AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController()))
+    {
+        AIController->GetBrainComponent()->StartLogic();
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("Enemy woke up from sleep"));
 }

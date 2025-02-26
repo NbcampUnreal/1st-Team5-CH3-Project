@@ -45,6 +45,14 @@ public:
     // 이동 속도 업데이트
     void UpdateMovementSpeed();
 
+    // 마취 상태인지 확인
+    UFUNCTION(BlueprintCallable, Category = "AI|State")
+    bool IsSleeping() const { return bIsSleeping; }
+
+    // 마취 효과 적용 (마취총에 맞았을 때 호출)
+    UFUNCTION(BlueprintCallable, Category = "AI|State")
+    void Sleep(float Duration);
+
 protected:
     virtual void BeginPlay() override;
 
@@ -109,6 +117,16 @@ protected:
     UPROPERTY(EditAnywhere, Category = "AI|Combat")
     float AttackCooldown = 2.0f;    // 기본 공격 쿨타임
 
+    // 마취 상태
+    UPROPERTY(VisibleAnywhere, Category = "AI|State")
+    bool bIsSleeping;
+
+    // 마취 해제 타이머
+    FTimerHandle SleepTimerHandle;
+
+    bool bCanAttack = true;
+    FTimerHandle AttackCooldownTimer;
+
 private:
     // 사망 상태
     bool bIsDead;
@@ -116,7 +134,6 @@ private:
     // 원거리 공격 함수 (나중에 구현할 예정)
     void FireProjectile();
 
-    // 공격 관련 변수
-    FTimerHandle AttackTimerHandle;
-    bool bCanAttack = true;
+    // 마취 해제 함수
+    void WakeUp();
 };
