@@ -12,6 +12,7 @@ ACoinItem::ACoinItem()
 
 void ACoinItem::BeginPlay()
 {
+    Super::BeginPlay();
 }
 
 void ACoinItem::ActivateItem(AActor* Activator)
@@ -22,9 +23,10 @@ void ACoinItem::ActivateItem(AActor* Activator)
     {
         if (UWorld* World = GetWorld())
         {
-            if (UBasicGameInstance* GameInstance = World->GetGameState<UBasicGameInstance>())
+            if (UBasicGameInstance* GameInstance = World->GetGameInstance<UBasicGameInstance>())
             {
                 GameInstance->AddScore(PointValue);
+                UE_LOG(LogTemp, Warning, TEXT("%d"), GameInstance->TotalScore);
             }
         }
         DestroyItem();
