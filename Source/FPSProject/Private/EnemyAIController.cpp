@@ -130,7 +130,7 @@ bool AEnemyAIController::IsInAttackRange()
     // 공격 범위 내에 있는지 확인
     if (Distance <= EnemyChar->GetAttackRange())
     {
-        // 부채꼴 각도 확인 (전방 60도 내에 있는지)
+        // 부채꼴 각도 확인 (전방 60도 내에 있는지) - 시각화 및 기본 체크용
         FVector EnemyForward = EnemyChar->GetActorForwardVector();
         FVector DirectionToPlayer = (PlayerPawn->GetActorLocation() - EnemyChar->GetActorLocation()).GetSafeNormal();
         
@@ -138,10 +138,35 @@ bool AEnemyAIController::IsInAttackRange()
         float AngleRad = FMath::Acos(DotProduct);
         float AngleDeg = FMath::RadiansToDegrees(AngleRad);
         
-        // 전방 60도 내에 있으면 공격 가능
+        // 전방 60도 내에 있으면
         if (AngleDeg <= 30.0f)  // 60도 부채꼴이므로 중심에서 30도
         {
-            return true;
+            // 직선 레이캐스트로 실제 공격 가능 여부 확인
+            FHitResult HitResult;
+            FCollisionQueryParams QueryParams;
+            QueryParams.AddIgnoredActor(EnemyChar);
+            
+            FVector StartLocation = EnemyChar->GetActorLocation();
+            StartLocation.Z += 50.0f;  // 총구 높이 조정
+            
+            FVector EndLocation = PlayerPawn->GetActorLocation();
+            EndLocation.Z += 50.0f;    // 플레이어 중심점
+            
+            // 총알이 날아갈 경로에 장애물이 없는지 확인
+            bool bHasLineOfSight = !GetWorld()->LineTraceSingleByChannel(
+                HitResult, 
+                StartLocation, 
+                EndLocation, 
+                ECC_Visibility, 
+                QueryParams
+            );
+
+            if (bHasLineOfSight)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Enemy can attack player - Distance: %f, Angle: %f"), 
+                    Distance, AngleDeg);
+                return true;
+            }
         }
     }
     
