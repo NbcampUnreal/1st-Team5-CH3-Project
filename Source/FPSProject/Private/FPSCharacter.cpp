@@ -64,7 +64,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
                 EnhancedInput->BindAction(PlayerController->SprintAction, ETriggerEvent::Triggered, this, &AFPSCharacter::StartSprint);
                 EnhancedInput->BindAction(PlayerController->SprintAction, ETriggerEvent::Completed, this, &AFPSCharacter::StopSprint);
             }
-            if (PlayerController->Viewpoint_TransformationAction) // ���Ⱑ �߿�!
+            if (PlayerController->Viewpoint_TransformationAction) // 여기가 중요!
             {
                 UE_LOG(LogTemp, Warning, TEXT("Binding Viewpoint_Transformation Action!"));
                 EnhancedInput->BindAction(PlayerController->Viewpoint_TransformationAction, ETriggerEvent::Triggered, this, &AFPSCharacter::Viewpoint_Transformation);
@@ -130,6 +130,7 @@ void AFPSCharacter::StartSprint(const FInputActionValue& value)
     if (GetCharacterMovement())
     {
         GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+        SetCharacterState(ECharacterState::Sprinting);  // AI 감지용 상태 변경
     }
 }
 
@@ -138,6 +139,7 @@ void AFPSCharacter::StopSprint(const FInputActionValue& value)
     if (GetCharacterMovement())
     {
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+        SetCharacterState(ECharacterState::Normal);     // AI 감지용 상태 변경
     }
 }
 
@@ -162,6 +164,7 @@ void AFPSCharacter::Die()
     if (!bIsAlive) return;
 
     bIsAlive = false;
+    SetCharacterState(ECharacterState::Dead);          // AI 감지용 상태 변경
     GetCharacterMovement()->DisableMovement();
     DisableInput(Cast<APlayerController>(GetController()));
 
@@ -196,25 +199,25 @@ void AFPSCharacter::Die()
 
 
 
-// ���� ���� ����
+//   
 void AFPSCharacter::Attack()
 {
     UE_LOG(LogTemp, Warning, TEXT("Character attacked."));
 }
 
-// Ư�� ��ġ�� �̵�
+// 특정 위치로 이동
 void AFPSCharacter::MoveTo(FVector TargetLocation)
 {
     UE_LOG(LogTemp, Warning, TEXT("Moving to location: %s"), *TargetLocation.ToString());
 }
 
-// ĳ������ ���� ���� ��ȯ
+// 캐릭터의 생존 상태 반환
 bool AFPSCharacter::IsAlive() const
 {
     return bIsAlive;
 }
 
-// �ִϸ��̼� ����
+// 애니메이션 재생
 void AFPSCharacter::PlayAnimation(UAnimMontage* Animation)
 {
     if (Animation)
@@ -283,9 +286,10 @@ void AFPSCharacter::StartCrouch(const FInputActionValue& Value)
     {
         UE_LOG(LogTemp, Warning, TEXT("Crouch Started!"));
 
-        // ũ���ġ ����
+        // 크라우치 시작
         Crouch();
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed * 0.5f;
+        SetCharacterState(ECharacterState::Crouching);     // AI 감지용 상태 변경
     }
 }
 
@@ -297,14 +301,51 @@ void AFPSCharacter::StopCrouch(const FInputActionValue& Value)
     {
         UE_LOG(LogTemp, Warning, TEXT("Crouch Stopped!"));
 
-        // ũ���ġ ����
+        // 크라우치 종료
         UnCrouch();
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+        SetCharacterState(ECharacterState::Normal);        // AI 감지용 상태 변경
     }
 }
 
 void AFPSCharacter::DestroyCharacter()
 {
     Destroy();
+}
+
+void AFPSCharacter::SetCharacterState(ECharacterState NewState)
+{
+    if (CurrentState != NewState)
+    {
+        CurrentState = NewState;
+        HandleStateChange(NewState);
+        OnStateChanged(NewState);
+    }
+}
+
+void AFPSCharacter::HandleStateChange(ECharacterState NewState)
+{
+    switch (NewState)
+    {
+        case ECharacterState::Normal:
+            GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+            break;
+            
+        case ECharacterState::Sprinting:
+            GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+            break;
+            
+        case ECharacterState::Crouching:
+            GetCharacterMovement()->MaxWalkSpeed = NormalSpeed * 0.5f;
+            break;
+            
+        case ECharacterState::Dead:
+            GetCharacterMovement()->StopMovementImmediately();
+            break;
+    }
+
+    // 상태 변경 로그
+    UE_LOG(LogTemp, Warning, TEXT("Character State Changed to: %s"), 
+        *UEnum::GetValueAsString(NewState));
 }
 
