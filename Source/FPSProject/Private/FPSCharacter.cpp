@@ -7,34 +7,27 @@
 #include "TimerManager.h"
 #include "CharacterInterface.h"
 
-// »ý¼ºÀÚ
 AFPSCharacter::AFPSCharacter()
 {
-    // Crouch ±â´É È°¼ºÈ­
     GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
     PrimaryActorTick.bCanEverTick = false;
 
-    // ½ºÇÁ¸µ ¾Ï ÄÄÆ÷³ÍÆ® »ý¼º ¹× ¼³Á¤
     SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
     SpringArmComp->SetupAttachment(RootComponent);
     SpringArmComp->TargetArmLength = 300.0f;
     SpringArmComp->bUsePawnControlRotation = true;
 
-    // Ä«¸Þ¶ó ÄÄÆ÷³ÍÆ® »ý¼º ¹× ¼³Á¤
     CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
     CameraComp->bUsePawnControlRotation = false;
 
-    // ÀÌµ¿ ¼Óµµ ¼³Á¤
     NormalSpeed = 400.0f;
     SprintSpeedMultiplier = 2.0f;
     SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
 
-    // Ã¼·Â ÃÊ±âÈ­
     Health = 100.0f;
 
-    // ±âº» ÀÌµ¿ ¼Óµµ ¼³Á¤
     GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 }
 
@@ -65,7 +58,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
                 EnhancedInput->BindAction(PlayerController->SprintAction, ETriggerEvent::Triggered, this, &AFPSCharacter::StartSprint);
                 EnhancedInput->BindAction(PlayerController->SprintAction, ETriggerEvent::Completed, this, &AFPSCharacter::StopSprint);
             }
-            if (PlayerController->Viewpoint_TransformationAction) // ¿©±â°¡ Áß¿ä!
+            if (PlayerController->Viewpoint_TransformationAction) // ï¿½ï¿½ï¿½â°¡ ï¿½ß¿ï¿½!
             {
                 UE_LOG(LogTemp, Warning, TEXT("Binding Viewpoint_Transformation Action!"));
                 EnhancedInput->BindAction(PlayerController->Viewpoint_TransformationAction, ETriggerEvent::Triggered, this, &AFPSCharacter::Viewpoint_Transformation);
@@ -81,14 +74,11 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 }
 
 
-
-// ÇöÀç Ã¼·ÂÀ» ¹ÝÈ¯
 float AFPSCharacter::GetHealth() const
 {
     return Health;
 }
 
-// ÀÌµ¿ Ã³¸®
 void AFPSCharacter::Move(const FInputActionValue& value)
 {
     if (!Controller) return;
@@ -106,7 +96,6 @@ void AFPSCharacter::Move(const FInputActionValue& value)
     }
 }
 
-// Á¡ÇÁ ½ÃÀÛ
 void AFPSCharacter::StartJump(const FInputActionValue& value)
 {
     if (value.Get<bool>())
@@ -117,7 +106,6 @@ void AFPSCharacter::StartJump(const FInputActionValue& value)
     }
 }
 
-// Á¡ÇÁ Á¾·á
 void AFPSCharacter::StopJump(const FInputActionValue& value)
 {
     if (!value.Get<bool>())
@@ -126,7 +114,6 @@ void AFPSCharacter::StopJump(const FInputActionValue& value)
     }
 }
 
-// ¸¶¿ì½º ÀÌµ¿
 void AFPSCharacter::Look(const FInputActionValue& value)
 {
     FVector2D LookInput = value.Get<FVector2D>();
@@ -134,7 +121,6 @@ void AFPSCharacter::Look(const FInputActionValue& value)
     AddControllerPitchInput(LookInput.Y);
 }
 
-// ´Þ¸®±â ½ÃÀÛ
 void AFPSCharacter::StartSprint(const FInputActionValue& value)
 {
     if (GetCharacterMovement())
@@ -143,7 +129,6 @@ void AFPSCharacter::StartSprint(const FInputActionValue& value)
     }
 }
 
-// ´Þ¸®±â Á¾·á
 void AFPSCharacter::StopSprint(const FInputActionValue& value)
 {
     if (GetCharacterMovement())
@@ -152,7 +137,7 @@ void AFPSCharacter::StopSprint(const FInputActionValue& value)
     }
 }
 
-// µ¥¹ÌÁö¸¦ ¹Þ¾ÒÀ» ¶§ Ã¼·Â °¨¼Ò
+
 void AFPSCharacter::TakeDamage(float DamageAmount)
 {
     if (!bIsAlive) return;
@@ -167,38 +152,37 @@ void AFPSCharacter::TakeDamage(float DamageAmount)
     }
 }
 
-// Ä³¸¯ÅÍ »ç¸Á Ã³¸®
+
 void AFPSCharacter::Die()
 {
     if (!bIsAlive) return;
 
-    bIsAlive = false; // Ä³¸¯ÅÍ »ýÁ¸ »óÅÂ º¯°æ
-    GetCharacterMovement()->DisableMovement(); // ÀÌµ¿ ºÒ°¡
-    DisableInput(Cast<APlayerController>(GetController())); // ÇÃ·¹ÀÌ¾î ÀÔ·Â ºñÈ°¼ºÈ­
+    bIsAlive = false; 
+    GetCharacterMovement()->DisableMovement(); 
+    DisableInput(Cast<APlayerController>(GetController())); 
 
-    // ÄÁÆ®·Ñ·¯°¡ ¾øÀ» °æ¿ì Ã¼Å©
+    
     APlayerController* PlayerController = Cast<APlayerController>(GetController());
     if (PlayerController)
     {
-        PlayerController->SetIgnoreLookInput(true); // ¸¶¿ì½º ½ÃÁ¡ °íÁ¤
-        PlayerController->SetIgnoreMoveInput(true); // Å°º¸µå ÀÔ·Âµµ ¸·À½
+        PlayerController->SetIgnoreLookInput(true); 
+        PlayerController->SetIgnoreMoveInput(true); 
     }
 
-    // »ç¸Á ½Ã Ä«¸Þ¶ó À§Ä¡ Á¶Á¤
     if (SpringArmComp)
     {
-        SpringArmComp->TargetArmLength = 300.0f; // °Å¸®¸¦ 300À¸·Î ¼³Á¤
-        SpringArmComp->bUsePawnControlRotation = false; // Ä«¸Þ¶ó °íÁ¤
+        SpringArmComp->TargetArmLength = 300.0f; 
+        SpringArmComp->bUsePawnControlRotation = false;
 
-        // Ä«¸Þ¶ó¸¦ Ä³¸¯ÅÍ ¾ÕÂÊÀ¸·Î ÀÌµ¿
-        FVector NewCameraLocation = GetActorLocation() + GetActorForwardVector() * -100.0f; // Ä³¸¯ÅÍ ¾ÕÂÊÀ¸·Î ÀÌµ¿
+        
+        FVector NewCameraLocation = GetActorLocation() + GetActorForwardVector() * -100.0f; // Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½
         SpringArmComp->SetWorldLocation(NewCameraLocation);
 
-        // Ä«¸Þ¶ó°¡ Á¤¸é¿¡¼­ ¹Ù¶óº¸µµ·Ï Á¶Á¤
+        
         CameraComp->SetRelativeRotation(FRotator(10.0f, 0.0f, 0.0f));
     }
 
-    // »ç¸Á ¾Ö´Ï¸ÞÀÌ¼Ç ½ÇÇà
+  
     if (DeathMontage)
     {
         float MontageDuration = PlayAnimMontage(DeathMontage);
@@ -206,32 +190,32 @@ void AFPSCharacter::Die()
     }
     else
     {
-        // ¾Ö´Ï¸ÞÀÌ¼ÇÀÌ ¾øÀ¸¸é ¹Ù·Î »èÁ¦
+        // ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù·ï¿½ ï¿½ï¿½ï¿½ï¿½
         DestroyCharacter();
     }
 }
 
 
 
-// °ø°Ý µ¿ÀÛ ½ÇÇà
+// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 void AFPSCharacter::Attack()
 {
     UE_LOG(LogTemp, Warning, TEXT("Character attacked."));
 }
 
-// Æ¯Á¤ À§Ä¡·Î ÀÌµ¿
+// Æ¯ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Ìµï¿½
 void AFPSCharacter::MoveTo(FVector TargetLocation)
 {
     UE_LOG(LogTemp, Warning, TEXT("Moving to location: %s"), *TargetLocation.ToString());
 }
 
-// Ä³¸¯ÅÍÀÇ »ýÁ¸ ¿©ºÎ ¹ÝÈ¯
+// Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
 bool AFPSCharacter::IsAlive() const
 {
     return bIsAlive;
 }
 
-// ¾Ö´Ï¸ÞÀÌ¼Ç ½ÇÇà
+// ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½ï¿½
 void AFPSCharacter::PlayAnimation(UAnimMontage* Animation)
 {
     if (Animation)
@@ -248,7 +232,7 @@ void AFPSCharacter::Viewpoint_Transformation()
 
     if (!bIsFirstPerson)
     {
-        // 1ÀÎÄª ¼³Á¤
+        // 1ï¿½ï¿½Äª ï¿½ï¿½ï¿½ï¿½
         SpringArmComp->TargetArmLength = 0.0f;
         CameraComp->bUsePawnControlRotation = true;
         SpringArmComp->bUsePawnControlRotation = true;
@@ -258,14 +242,14 @@ void AFPSCharacter::Viewpoint_Transformation()
     }
     else
     {
-        // 3ÀÎÄªÀ¸·Î º¯°æµÉ ¶§ ÇöÀç Ä«¸Þ¶ó ¹æÇâÀ» Ä³¸¯ÅÍ ¹æÇâÀ¸·Î ¹Ý¿µ
+        // 3ï¿½ï¿½Äªï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ý¿ï¿½
         AController* PlayerController = GetController();
         if (PlayerController)
         {
-            PlayerController->SetControlRotation(GetActorRotation()); // ÇöÀç Ä³¸¯ÅÍ È¸Àü°ªÀ¸·Î ¼³Á¤
+            PlayerController->SetControlRotation(GetActorRotation()); // ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ È¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         }
 
-        // 3ÀÎÄª ¼³Á¤
+        // 3ï¿½ï¿½Äª ï¿½ï¿½ï¿½ï¿½
         SpringArmComp->TargetArmLength = 300.0f;
         CameraComp->bUsePawnControlRotation = false;
         SpringArmComp->bUsePawnControlRotation = true;
@@ -285,7 +269,7 @@ void AFPSCharacter::StartCrouch(const FInputActionValue& Value)
     {
         UE_LOG(LogTemp, Warning, TEXT("Crouch Started!"));
 
-        // Å©¶ó¿ìÄ¡ ½ÇÇà
+        // Å©ï¿½ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
         Crouch();
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed * 0.5f;
     }
@@ -299,7 +283,7 @@ void AFPSCharacter::StopCrouch(const FInputActionValue& Value)
     {
         UE_LOG(LogTemp, Warning, TEXT("Crouch Stopped!"));
 
-        // Å©¶ó¿ìÄ¡ ÇØÁ¦
+        // Å©ï¿½ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
         UnCrouch();
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
     }
