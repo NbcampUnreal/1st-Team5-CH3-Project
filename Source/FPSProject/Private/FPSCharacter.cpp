@@ -107,8 +107,6 @@ void AFPSCharacter::StartJump(const FInputActionValue& value)
     if (value.Get<bool>())
     {
         Jump();
-        TakeDamage(10);
-        UE_LOG(LogTemp, Warning, TEXT("Current Health: %f"), Health);
     }
 }
 
@@ -163,32 +161,24 @@ void AFPSCharacter::Die()
 {
     if (!bIsAlive) return;
 
-    bIsAlive = false; 
-    GetCharacterMovement()->DisableMovement(); 
-    DisableInput(Cast<APlayerController>(GetController())); 
+    bIsAlive = false;
+    GetCharacterMovement()->DisableMovement();
+    DisableInput(Cast<APlayerController>(GetController()));
 
-    
     APlayerController* PlayerController = Cast<APlayerController>(GetController());
     if (PlayerController)
     {
-        PlayerController->SetIgnoreLookInput(true); 
-        PlayerController->SetIgnoreMoveInput(true); 
+        PlayerController->SetIgnoreLookInput(true);
+        PlayerController->SetIgnoreMoveInput(true);
     }
 
-    if (SpringArmComp)
+    // 1인칭 모드에서 죽으면 자동으로 3인칭으로 전환
+    if (!bIsFirstPerson)
     {
-        SpringArmComp->TargetArmLength = 300.0f; 
-        SpringArmComp->bUsePawnControlRotation = false;
-
-        
-        FVector NewCameraLocation = GetActorLocation() + GetActorForwardVector() * -100.0f; // ĳ���� �������� �̵�
-        SpringArmComp->SetWorldLocation(NewCameraLocation);
-
-        
-        CameraComp->SetRelativeRotation(FRotator(10.0f, 0.0f, 0.0f));
+        Viewpoint_Transformation(); // 3인칭 모드로 변경
     }
 
-  
+    // 죽는 애니메이션 재생
     if (DeathMontage)
     {
         float MontageDuration = PlayAnimMontage(DeathMontage);
@@ -196,10 +186,13 @@ void AFPSCharacter::Die()
     }
     else
     {
-        // �ִϸ��̼��� ������ �ٷ� ����
+        // 애니메이션 없이 즉시 삭제
         DestroyCharacter();
     }
+
+    UE_LOG(LogTemp, Warning, TEXT("Character Died and switched to Third-Person View."));
 }
+
 
 
 
