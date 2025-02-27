@@ -115,6 +115,7 @@ protected:
 
     bool bCanAttack = true;
     FTimerHandle AttackCooldownTimer;
+    FTimerHandle AttackTimerHandle;
 
     // 헤더에 상태별 감지 범위 수정자 추가
     UPROPERTY(EditAnywhere, Category = "AI|Detection")

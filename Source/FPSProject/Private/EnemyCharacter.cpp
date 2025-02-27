@@ -116,9 +116,13 @@ void AEnemyCharacter::Attack()
     if (AttackMontage)
     {
         float PlayRate = 2.5f;
-        float AnimDuration = PlayAnimMontage(AttackMontage, PlayRate);
+        // 원래 애니메이션 길이를 가져옴
+        float OriginalDuration = PlayAnimMontage(AttackMontage, PlayRate);
         
-        // 애니메이션이 끝나면 다시 이동 가능하도록 타이머 설정
+        // PlayRate를 고려한 실제 재생 시간 계산
+        float ActualDuration = OriginalDuration / PlayRate;
+
+        // 실제 재생 시간으로 타이머 설정
         GetWorld()->GetTimerManager().SetTimer(
             AttackTimerHandle,
             [this]()
@@ -126,10 +130,26 @@ void AEnemyCharacter::Attack()
                 // AI 컨트롤러의 행동 재개
                 if (AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController()))
                 {
+                    // 행동 로직 재개
                     AIController->GetBrainComponent()->StartLogic();
+                    
+                    // 현재 행동 트리 재시작
+                    AIController->GetBrainComponent()->RestartLogic();
+                    
+                    // 플레이어를 향해 즉시 이동 명령
+                    if (AActor* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+                    {
+                        float DistToPlayer = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
+                        if (DistToPlayer > AttackRange)
+                        {
+                            AIController->MoveToActor(Player);
+                            bIsChasing = true;
+                            UpdateMovementSpeed();
+                        }
+                    }
                 }
             },
-            AnimDuration,
+            ActualDuration * 0.9f,
             false
         );
 
