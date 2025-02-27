@@ -47,6 +47,7 @@ void AEnemyCharacter::TakeDamage(float DamageAmount)
     if (bIsDead) return;
 
     CurrentHealth = FMath::Max(0.0f, CurrentHealth - DamageAmount);
+    UE_LOG(LogTemp, Warning, TEXT("Enemy took damage: %f, Current Health: %f"), DamageAmount, CurrentHealth);
     
     if (CurrentHealth <= 0.0f)
     {
@@ -59,6 +60,16 @@ void AEnemyCharacter::Die()
     if (bIsDead) return;
     bIsDead = true;
     
+    // 킬 카운트 증가
+    if (UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(GetWorld()))
+    {
+        if (UBasicGameInstance* BasicGameInstance = Cast<UBasicGameInstance>(GameInstance))
+        {
+            BasicGameInstance->AddKill();     // 킬 카운트만 증가
+            UE_LOG(LogTemp, Warning, TEXT("Enemy died! Kill Count: %d"), BasicGameInstance->TotalKillCount);
+        }
+    }
+    
     // 사망 애니메이션 재생
     if (DeathMontage)
     {
@@ -68,7 +79,7 @@ void AEnemyCharacter::Die()
     // AI 이동 중지
     GetCharacterMovement()->StopMovementImmediately();
     
-     // AI 컨트롤러와의 연결 끊기
+    // AI 컨트롤러와의 연결 끊기
     if (AController* AIController = GetController())
     {
         AIController->UnPossess();
