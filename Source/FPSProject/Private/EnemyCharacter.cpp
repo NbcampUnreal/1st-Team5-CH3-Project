@@ -106,74 +106,26 @@ void AEnemyCharacter::Attack()
         SetActorRotation(NewRotation);
     }
 
+    // 공격 애니메이션 재생 추가
+    if (AttackMontage)
+    {
+        PlayAnimMontage(AttackMontage);
+        UE_LOG(LogTemp, Warning, TEXT("Playing Attack Montage!"));
+    }
+
     // 공격 쿨다운 설정
     bCanAttack = false;
     GetWorld()->GetTimerManager().SetTimer(
         AttackCooldownTimer,
         [this]() { bCanAttack = true; },
-        AttackCooldown,  // EnemyCharacter.h에 이미 정의된 변수 (기본값 2.0f)
+        AttackCooldown,
         false
     );
 
-    // 원거리 공격 구현
-    FireProjectile();
-    
     // 공격 사운드 재생
     if (AttackSound)
     {
         UGameplayStatics::PlaySoundAtLocation(this, AttackSound, GetActorLocation());
-    }
-}
-
-void AEnemyCharacter::FireProjectile()
-{
-    // 플레이어 위치 확인
-    APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-    if (!Player) return;
-    
-    // 발사 위치 및 방향 계산
-    FVector MuzzlePos = GetActorLocation() + GetActorForwardVector() * 100.0f + FVector(0, 0, 50.0f);
-    
-    // 메시에 소켓이 있으면 소켓 위치 사용
-    if (GetMesh()->DoesSocketExist(FName("MuzzleSocket")))
-    {
-        MuzzlePos = GetMesh()->GetSocketLocation(FName("MuzzleSocket"));
-    }
-    
-    FVector Direction = (Player->GetActorLocation() - MuzzlePos).GetSafeNormal();
-    
-    // 약간의 오차 추가 (완벽한 조준 방지)
-    float Spread = 0.05f;
-    Direction = FMath::VRandCone(Direction, Spread);
-    
-    // 히트스캔 방식으로 즉시 데미지 적용
-    FHitResult HitResult;
-    FCollisionQueryParams QueryParams;
-    QueryParams.AddIgnoredActor(this);
-    
-    // 디버그 라인 그리기 (개발 중에만)
-    DrawDebugLine(GetWorld(), MuzzlePos, MuzzlePos + Direction * 10000.0f, FColor::Cyan, false, 1.0f, 0, 1.0f);
-    
-    if (GetWorld()->LineTraceSingleByChannel(HitResult, MuzzlePos, MuzzlePos + Direction * 10000.0f, ECC_Pawn, QueryParams))
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Hit something: %s"), *HitResult.GetActor()->GetName());
-        
-        if (AFPSCharacter* FPSPlayer = Cast<AFPSCharacter>(HitResult.GetActor()))
-        {
-            // 인터페이스를 통해 데미지 전달
-            ICharacterInterface* CharacterInterface = Cast<ICharacterInterface>(FPSPlayer);
-            if (CharacterInterface)
-            {
-                CharacterInterface->TakeDamage(AttackDamage);
-                UE_LOG(LogTemp, Warning, TEXT("Hit FPSPlayer! Applying damage: %f"), AttackDamage);
-            }
-            
-            // 히트 이펙트 (선택적)
-            if (HitEffect)
-            {
-                UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffect, HitResult.Location, FRotator::ZeroRotator, true);
-            }
-        }
     }
 }
 

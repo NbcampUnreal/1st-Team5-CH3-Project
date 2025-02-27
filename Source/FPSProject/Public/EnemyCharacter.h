@@ -79,10 +79,6 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Combat")
     float DetectionRange;
 
-    // 총쏘기 애니메이션 몽타주
-    UPROPERTY(EditDefaultsOnly, Category = "Animation")
-    UAnimMontage* ShootMontage;
-
     // 사망 애니메이션
     UPROPERTY(EditDefaultsOnly, Category = "Animation")
     UAnimMontage* DeathMontage;
@@ -93,16 +89,6 @@ protected:
 
     UPROPERTY(EditAnywhere, Category = "AI|Movement")
     float ChaseSpeed = 400.0f;
-
-    // 원거리 공격 관련 변수 추가
-    UPROPERTY(EditDefaultsOnly, Category = "Combat")
-    float ProjectileSpeed = 2000.0f;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Combat")
-    TSubclassOf<class AActor> ProjectileClass;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Combat")
-    USceneComponent* MuzzleLocation;
 
     // 히트 이펙트
     UPROPERTY(EditDefaultsOnly, Category = "Combat")
@@ -143,9 +129,6 @@ protected:
 private:
     // 사망 상태
     bool bIsDead;
-
-    // 원거리 공격 함수 (나중에 구현할 예정)
-    void FireProjectile();
 
     // 마취 해제 함수
     void WakeUp();
