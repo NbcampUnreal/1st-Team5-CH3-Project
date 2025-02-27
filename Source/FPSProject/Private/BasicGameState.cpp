@@ -42,9 +42,45 @@ void ABasicGameState::OnGameOver()
     }
 }
 
+void ABasicGameState::SetGamePhase(EGamePhase NewPhase)
+{
+    if (CurrentPhase == NewPhase) return; 
+
+    CurrentPhase = NewPhase;
+    UE_LOG(LogTemp, Warning, TEXT("Game Phase changed to: %d"), (uint8)CurrentPhase);
+
+    switch (CurrentPhase)
+    {
+    case EGamePhase::Stealth:
+        break;
+
+    case EGamePhase::Combat:
+        break;
+
+    case EGamePhase::Escape:
+        break;
+
+    case EGamePhase::GameOver:
+        break;
+    }
+}
+
 void ABasicGameState::UpdateHUD()
 {
 }
+
+void ABasicGameState::StartStealthPhase()
+{
+    CurrentPhase = EGamePhase::Stealth;
+
+
+}
+
+void ABasicGameState::StartCombatPhase()
+{
+    CurrentPhase = EGamePhase::Combat;
+}
+
 
 AFPSPlayerController* ABasicGameState::GetFPSPlayerController() const
 {

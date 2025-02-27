@@ -8,6 +8,17 @@ class ACoinItem;
 class AFPSPlayerController;
 class UBasicGameInstance;
 
+
+UENUM(BlueprintType)
+enum class EGamePhase : uint8
+{
+	Tutorial UMETA(DisplayName = "Tutorial"),
+	Stealth UMETA(DisplayName = "Stealth"),  
+	Combat UMETA(DisplayName = "Combat"),    
+	Escape UMETA(DisplayName = "Escape"),   
+	GameOver UMETA(DisplayName = "Game Over")     
+};
+
 UCLASS()
 class FPSPROJECT_API ABasicGameState : public AGameState
 {
@@ -16,13 +27,18 @@ class FPSPROJECT_API ABasicGameState : public AGameState
 public:
 	ABasicGameState();
 	virtual void BeginPlay() override;
-	
+	// Record
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Score")
 	int32 Score;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Score")
 	int32 KillCount;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Score")
 	int32 SleepCount;
+	// GamePhase
+
+	UPROPERTY(BlueprintReadOnly, Category = "Game Phase")
+	EGamePhase CurrentPhase = EGamePhase::Tutorial;
+
 
 	UFUNCTION(BlueprintPure, Category = " Score")
 	int32 GetScore() const;
@@ -30,10 +46,12 @@ public:
 	void AddScore(int32 Amount);
 	UFUNCTION(BlueprintCallable, Category = " Level")
 	void OnGameOver();
-
-
+	UFUNCTION(BlueprintCallable, Category = " Phase")
+	void SetGamePhase(EGamePhase NewPhase);
 	void UpdateHUD();
 
+	void StartStealthPhase();
+	void StartCombatPhase();
 
 private:
 	AFPSPlayerController* GetFPSPlayerController() const;
