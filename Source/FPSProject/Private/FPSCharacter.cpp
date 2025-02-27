@@ -88,6 +88,12 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
                 UE_LOG(LogTemp, Warning, TEXT("wepon2!"));
                 EnhancedInput->BindAction(PlayerController->SelectWeapon2Action, ETriggerEvent::Started, this, &AFPSCharacter::SelectWeapon2);
             }
+            if (PlayerController->FireAction)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("FireAction 바인딩 완료!"));
+                EnhancedInput->BindAction(PlayerController->FireAction, ETriggerEvent::Started, this, &AFPSCharacter::Fire);
+            }
+
 
         }
 
@@ -408,18 +414,46 @@ void AFPSCharacter::EquipWeapon(int32 WeaponIndex)
         CurrentWeapon = nullptr;
     }
 
+    // 🔹 소켓이 있는지 확인 (없으면 오류 메시지 출력)
+    if (!GetMesh()->DoesSocketExist(TEXT("WeaponSocket")))
+    {
+        UE_LOG(LogTemp, Error, TEXT("WeaponSocket이 존재하지 않습니다! 손에 무기를 부착할 수 없습니다."));
+        return;
+    }
+
     // 무기 생성 위치와 회전 설정
-    FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("WeaponSocket"));
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = this;
+    SpawnParams.Instigator = GetInstigator();
+
+    FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("WeaponSocket")); // 🔹 소켓 위치 사용
     FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("WeaponSocket"));
 
     // 새 무기 생성
-    FActorSpawnParameters SpawnParams;
     CurrentWeapon = GetWorld()->SpawnActor<ASimWeapon>(WeaponClasses[WeaponIndex], SpawnLocation, SpawnRotation, SpawnParams);
 
     if (CurrentWeapon)
     {
-        // 캐릭터 손에 무기 장착
+        // 🔹 손의 "WeaponSocket"에 부착
         CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
         UE_LOG(LogTemp, Warning, TEXT("무기 %d 장착됨!"), WeaponIndex);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("무기 스폰 실패!"));
+    }
+}
+
+
+void AFPSCharacter::Fire()
+{
+    if (CurrentWeapon)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Fire() 호출됨, 무기 발사!"));
+        CurrentWeapon->Fire();
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Fire() 호출됨, 하지만 무기가 없음!"));
     }
 }

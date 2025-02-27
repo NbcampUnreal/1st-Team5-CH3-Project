@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -9,18 +7,29 @@
 UCLASS()
 class FPSPROJECT_API ASimWeapon : public AActor
 {
-	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	ASimWeapon();
+    GENERATED_BODY()
+
+public:
+    ASimWeapon();
+
+    // Tick 함수 오버라이드 추가
+    virtual void Tick(float DeltaTime) override;
+
+    void Fire();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    // Skeletal Mesh 추가 (총기 모델)
+    UPROPERTY(VisibleAnywhere, Category = "Weapon")
+    USkeletalMeshComponent* WeaponMesh;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+    // 발사 범위
+    UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+    float FireRange = 10000.0f;
 
+    // 총구 이펙트 및 사운드
+    UPROPERTY(EditDefaultsOnly, Category = "Effects")
+    UParticleSystem* MuzzleFlash;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Effects")
+    USoundBase* FireSound;
 };

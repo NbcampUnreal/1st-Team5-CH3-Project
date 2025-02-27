@@ -88,7 +88,8 @@ public:
 	// 무기 변경 함수 (입력 바인딩용)
 	void SelectWeapon1();
 	void SelectWeapon2();
-
+	// **총 발사 요청**
+	void Fire();
 protected:
 
 	virtual void BeginPlay() override;

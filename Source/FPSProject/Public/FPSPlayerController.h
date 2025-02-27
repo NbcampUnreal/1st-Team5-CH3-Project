@@ -43,6 +43,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	UInputAction* SelectWeapon2Action;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	UInputAction* FireAction;
+
 	virtual void BeginPlay() override;
 
 
