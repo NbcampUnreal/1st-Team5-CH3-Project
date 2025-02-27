@@ -10,7 +10,9 @@ AFPSPlayerController::AFPSPlayerController()
     LookAction(nullptr),
     SprintAction(nullptr),
     CrouchAction(nullptr),
-    Viewpoint_TransformationAction(nullptr) 
+    Viewpoint_TransformationAction(nullptr),
+    SelectWeapon1Action(nullptr),
+    SelectWeapon2Action(nullptr)
 {
 }
 
@@ -33,3 +35,4 @@ void AFPSPlayerController::BeginPlay()
         }
     }
 }
+

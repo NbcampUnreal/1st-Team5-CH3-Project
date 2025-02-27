@@ -4,8 +4,8 @@
 #include "GameFramework/PlayerController.h"
 #include "FPSPlayerController.generated.h"
 
-class UInputMappingContext; 
-class UInputAction; 
+class UInputMappingContext;
+class UInputAction;
 
 UCLASS()
 class FPSPROJECT_API AFPSPlayerController : public APlayerController
@@ -31,11 +31,20 @@ public:
 	UInputAction* SprintAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	UInputAction* Viewpoint_TransformationAction; 
+	UInputAction* Viewpoint_TransformationAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	UInputAction* CrouchAction;
 
+	// 무기 변경을 위한 Input Action 추가
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	UInputAction* SelectWeapon1Action;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	UInputAction* SelectWeapon2Action;
+
 	virtual void BeginPlay() override;
+
+
 
 };
