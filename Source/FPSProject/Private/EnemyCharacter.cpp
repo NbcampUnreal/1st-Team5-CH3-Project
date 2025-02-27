@@ -21,6 +21,10 @@ AEnemyCharacter::AEnemyCharacter()
     // AI 이동 설정
     GetCharacterMovement()->bOrientRotationToMovement = true;
     GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+
+    // 무기 메시 컴포넌트 생성
+    WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
+    WeaponMesh->SetupAttachment(GetMesh(), "WeaponSocket_L");
 }
 
 void AEnemyCharacter::BeginPlay()
@@ -96,21 +100,44 @@ void AEnemyCharacter::Attack()
 {
     if (bIsDead || !bCanAttack) return;
 
-    // 플레이어 위치 확인 및 회전
+    // 플레이어 방향으로 회전
     AActor* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
     if (Player)
     {
-        // 플레이어 방향으로 즉시 회전
         FVector Direction = (Player->GetActorLocation() - GetActorLocation()).GetSafeNormal();
         FRotator NewRotation = Direction.Rotation();
         SetActorRotation(NewRotation);
     }
 
-    // 공격 애니메이션 재생 추가
+    // 이동 중지
+    GetCharacterMovement()->StopMovementImmediately();
+
+    // 공격 애니메이션 재생
     if (AttackMontage)
     {
-        PlayAnimMontage(AttackMontage);
-        UE_LOG(LogTemp, Warning, TEXT("Playing Attack Montage!"));
+        float PlayRate = 2.5f;
+        float AnimDuration = PlayAnimMontage(AttackMontage, PlayRate);
+        
+        // 애니메이션이 끝나면 다시 이동 가능하도록 타이머 설정
+        GetWorld()->GetTimerManager().SetTimer(
+            AttackTimerHandle,
+            [this]()
+            {
+                // AI 컨트롤러의 행동 재개
+                if (AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController()))
+                {
+                    AIController->GetBrainComponent()->StartLogic();
+                }
+            },
+            AnimDuration,
+            false
+        );
+
+        // AI 컨트롤러의 행동 중지
+        if (AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController()))
+        {
+            AIController->GetBrainComponent()->StopLogic("Attacking");
+        }
     }
 
     // 공격 쿨다운 설정
@@ -122,7 +149,6 @@ void AEnemyCharacter::Attack()
         false
     );
 
-    // 공격 사운드 재생
     if (AttackSound)
     {
         UGameplayStatics::PlaySoundAtLocation(this, AttackSound, GetActorLocation());

@@ -126,6 +126,9 @@ protected:
     UPROPERTY(EditAnywhere, Category = "AI|Detection")
     float CrouchingRangeMultiplier = 0.5f;
 
+    UPROPERTY(VisibleAnywhere, Category = "Weapon")
+    USkeletalMeshComponent* WeaponMesh;
+
 private:
     // 사망 상태
     bool bIsDead;
