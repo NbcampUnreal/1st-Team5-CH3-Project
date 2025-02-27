@@ -21,6 +21,10 @@ AEnemyCharacter::AEnemyCharacter()
     // AI 이동 설정
     GetCharacterMovement()->bOrientRotationToMovement = true;
     GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+
+    // 무기 메시 컴포넌트 생성
+    WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
+    WeaponMesh->SetupAttachment(GetMesh(), "WeaponSocket_L");
 }
 
 void AEnemyCharacter::BeginPlay()
@@ -96,14 +100,64 @@ void AEnemyCharacter::Attack()
 {
     if (bIsDead || !bCanAttack) return;
 
-    // 플레이어 위치 확인 및 회전
+    // 플레이어 방향으로 회전
     AActor* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
     if (Player)
     {
-        // 플레이어 방향으로 즉시 회전
         FVector Direction = (Player->GetActorLocation() - GetActorLocation()).GetSafeNormal();
         FRotator NewRotation = Direction.Rotation();
         SetActorRotation(NewRotation);
+    }
+
+    // 이동 중지
+    GetCharacterMovement()->StopMovementImmediately();
+
+    // 공격 애니메이션 재생
+    if (AttackMontage)
+    {
+        float PlayRate = 2.5f;
+        // 원래 애니메이션 길이를 가져옴
+        float OriginalDuration = PlayAnimMontage(AttackMontage, PlayRate);
+        
+        // PlayRate를 고려한 실제 재생 시간 계산
+        float ActualDuration = OriginalDuration / PlayRate;
+
+        // 실제 재생 시간으로 타이머 설정
+        GetWorld()->GetTimerManager().SetTimer(
+            AttackTimerHandle,
+            [this]()
+            {
+                // AI 컨트롤러의 행동 재개
+                if (AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController()))
+                {
+                    // 행동 로직 재개
+                    AIController->GetBrainComponent()->StartLogic();
+                    
+                    // 현재 행동 트리 재시작
+                    AIController->GetBrainComponent()->RestartLogic();
+                    
+                    // 플레이어를 향해 즉시 이동 명령
+                    if (AActor* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+                    {
+                        float DistToPlayer = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
+                        if (DistToPlayer > AttackRange)
+                        {
+                            AIController->MoveToActor(Player);
+                            bIsChasing = true;
+                            UpdateMovementSpeed();
+                        }
+                    }
+                }
+            },
+            ActualDuration * 0.9f,
+            false
+        );
+
+        // AI 컨트롤러의 행동 중지
+        if (AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController()))
+        {
+            AIController->GetBrainComponent()->StopLogic("Attacking");
+        }
     }
 
     // 공격 쿨다운 설정
@@ -111,69 +165,13 @@ void AEnemyCharacter::Attack()
     GetWorld()->GetTimerManager().SetTimer(
         AttackCooldownTimer,
         [this]() { bCanAttack = true; },
-        AttackCooldown,  // EnemyCharacter.h에 이미 정의된 변수 (기본값 2.0f)
+        AttackCooldown,
         false
     );
 
-    // 원거리 공격 구현
-    FireProjectile();
-    
-    // 공격 사운드 재생
     if (AttackSound)
     {
         UGameplayStatics::PlaySoundAtLocation(this, AttackSound, GetActorLocation());
-    }
-}
-
-void AEnemyCharacter::FireProjectile()
-{
-    // 플레이어 위치 확인
-    APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-    if (!Player) return;
-    
-    // 발사 위치 및 방향 계산
-    FVector MuzzlePos = GetActorLocation() + GetActorForwardVector() * 100.0f + FVector(0, 0, 50.0f);
-    
-    // 메시에 소켓이 있으면 소켓 위치 사용
-    if (GetMesh()->DoesSocketExist(FName("MuzzleSocket")))
-    {
-        MuzzlePos = GetMesh()->GetSocketLocation(FName("MuzzleSocket"));
-    }
-    
-    FVector Direction = (Player->GetActorLocation() - MuzzlePos).GetSafeNormal();
-    
-    // 약간의 오차 추가 (완벽한 조준 방지)
-    float Spread = 0.05f;
-    Direction = FMath::VRandCone(Direction, Spread);
-    
-    // 히트스캔 방식으로 즉시 데미지 적용
-    FHitResult HitResult;
-    FCollisionQueryParams QueryParams;
-    QueryParams.AddIgnoredActor(this);
-    
-    // 디버그 라인 그리기 (개발 중에만)
-    DrawDebugLine(GetWorld(), MuzzlePos, MuzzlePos + Direction * 10000.0f, FColor::Cyan, false, 1.0f, 0, 1.0f);
-    
-    if (GetWorld()->LineTraceSingleByChannel(HitResult, MuzzlePos, MuzzlePos + Direction * 10000.0f, ECC_Pawn, QueryParams))
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Hit something: %s"), *HitResult.GetActor()->GetName());
-        
-        if (AFPSCharacter* FPSPlayer = Cast<AFPSCharacter>(HitResult.GetActor()))
-        {
-            // 인터페이스를 통해 데미지 전달
-            ICharacterInterface* CharacterInterface = Cast<ICharacterInterface>(FPSPlayer);
-            if (CharacterInterface)
-            {
-                CharacterInterface->TakeDamage(AttackDamage);
-                UE_LOG(LogTemp, Warning, TEXT("Hit FPSPlayer! Applying damage: %f"), AttackDamage);
-            }
-            
-            // 히트 이펙트 (선택적)
-            if (HitEffect)
-            {
-                UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffect, HitResult.Location, FRotator::ZeroRotator, true);
-            }
-        }
     }
 }
 
