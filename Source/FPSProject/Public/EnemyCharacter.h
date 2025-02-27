@@ -53,6 +53,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "AI|State")
     void Sleep(float Duration);
 
+    // 플레이어 상태에 따라 감지 범위 업데이트
+    void UpdateDetectionRangeForPlayerState(AFPSCharacter* Player);
+
 protected:
     virtual void BeginPlay() override;
 
@@ -126,6 +129,16 @@ protected:
 
     bool bCanAttack = true;
     FTimerHandle AttackCooldownTimer;
+
+    // 헤더에 상태별 감지 범위 수정자 추가
+    UPROPERTY(EditAnywhere, Category = "AI|Detection")
+    float BaseDetectionRange = 600.0f;  // 기존 DetectionRange 값을 기본값으로
+
+    UPROPERTY(EditAnywhere, Category = "AI|Detection")
+    float SprintingRangeMultiplier = 1.5f;
+
+    UPROPERTY(EditAnywhere, Category = "AI|Detection")
+    float CrouchingRangeMultiplier = 0.5f;
 
 private:
     // 사망 상태

@@ -14,8 +14,8 @@ AEnemyCharacter::AEnemyCharacter()
     MaxHealth = 100.0f;
     CurrentHealth = MaxHealth;
     AttackDamage = 20.0f;
-    AttackRange = 400.0f;     // 공격 범위 
-    DetectionRange = 600.0f;  // 감지 범위 
+    AttackRange = 300.0f;     // 공격 범위
+    DetectionRange = 600.0f;  // 감지 범위
     bIsDead = false;
 
     // AI 이동 설정
@@ -266,4 +266,30 @@ void AEnemyCharacter::WakeUp()
     }
 
     UE_LOG(LogTemp, Warning, TEXT("Enemy woke up from sleep"));
+}
+
+void AEnemyCharacter::UpdateDetectionRangeForPlayerState(AFPSCharacter* Player)
+{
+    if (!Player) return;
+
+    ECharacterState CurrentPlayerState = Player->GetCurrentState();
+    
+    switch (CurrentPlayerState)
+    {
+        case ECharacterState::Sprinting:
+            DetectionRange = 900.0f;  // 달리기: 기본 범위의 1.5배
+            break;
+            
+        case ECharacterState::Crouching:
+            DetectionRange = 300.0f;  // 앉기: 기본 범위의 0.5배
+            break;
+            
+        case ECharacterState::Dead:
+            DetectionRange = 0.0f;    // 사망: 감지 안함
+            break;
+            
+        default:  // Normal 상태
+            DetectionRange = 600.0f;  // 걷기: 기본 감지 범위
+            break;
+    }
 }

@@ -61,8 +61,17 @@ void AEnemyAIController::Tick(float DeltaTime)
 
 void AEnemyAIController::UpdatePlayerDetection()
 {
-    bool bCanSeePlayer = CanSeePlayer();
     APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    AFPSCharacter* Player = Cast<AFPSCharacter>(PlayerPawn);
+    AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(GetPawn());
+    
+    if (Enemy && Player)
+    {
+        // 플레이어 상태에 따라 감지 범위 업데이트
+        Enemy->UpdateDetectionRangeForPlayerState(Player);
+    }
+
+    bool bCanSeePlayer = CanSeePlayer();
     
     if (BlackboardComponent)
     {
@@ -70,8 +79,7 @@ void AEnemyAIController::UpdatePlayerDetection()
         BlackboardComponent->SetValueAsBool("CanSeePlayer", bCanSeePlayer);
     }
     
-    // Enemy 상태 업데이트
-    if (AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(GetPawn()))
+    if (Enemy)
     {
         Enemy->bIsChasing = bCanSeePlayer;
         Enemy->UpdateMovementSpeed();
