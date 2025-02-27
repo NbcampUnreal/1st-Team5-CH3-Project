@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "CharacterInterface.h"
+#include "SimWeapon.h" 
 #include "FPSCharacter.generated.h"
 
 class USpringArmComponent;
@@ -73,7 +74,26 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Character State")
 	void SetCharacterState(ECharacterState NewState);
 
+	// 현재 장착된 무기
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	ASimWeapon* CurrentWeapon;
+
+	// 무기 배열 (다양한 무기를 저장)
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TArray<TSubclassOf<ASimWeapon>> WeaponClasses;
+
+	// 무기 장착 함수
+	void EquipWeapon(int32 WeaponIndex);
+
+	// 무기 변경 함수 (입력 바인딩용)
+	void SelectWeapon1();
+	void SelectWeapon2();
+	// **총 발사 요청**
+	void Fire();
 protected:
+
+	virtual void BeginPlay() override;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USpringArmComponent* SpringArmComp;
 

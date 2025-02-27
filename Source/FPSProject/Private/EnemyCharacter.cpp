@@ -14,8 +14,8 @@ AEnemyCharacter::AEnemyCharacter()
     MaxHealth = 100.0f;
     CurrentHealth = MaxHealth;
     AttackDamage = 20.0f;
-    AttackRange = 400.0f;     // 공격 범위 
-    DetectionRange = 600.0f;  // 감지 범위 
+    AttackRange = 300.0f;     // 공격 범위
+    DetectionRange = 600.0f;  // 감지 범위
     bIsDead = false;
 
     // AI 이동 설정
@@ -47,6 +47,7 @@ void AEnemyCharacter::TakeDamage(float DamageAmount)
     if (bIsDead) return;
 
     CurrentHealth = FMath::Max(0.0f, CurrentHealth - DamageAmount);
+    UE_LOG(LogTemp, Warning, TEXT("Enemy took damage: %f, Current Health: %f"), DamageAmount, CurrentHealth);
     
     if (CurrentHealth <= 0.0f)
     {
@@ -59,6 +60,16 @@ void AEnemyCharacter::Die()
     if (bIsDead) return;
     bIsDead = true;
     
+    // 킬 카운트 증가
+    if (UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(GetWorld()))
+    {
+        if (UBasicGameInstance* BasicGameInstance = Cast<UBasicGameInstance>(GameInstance))
+        {
+            BasicGameInstance->AddKill();     // 킬 카운트만 증가
+            UE_LOG(LogTemp, Warning, TEXT("Enemy died! Kill Count: %d"), BasicGameInstance->TotalKillCount);
+        }
+    }
+    
     // 사망 애니메이션 재생
     if (DeathMontage)
     {
@@ -68,7 +79,7 @@ void AEnemyCharacter::Die()
     // AI 이동 중지
     GetCharacterMovement()->StopMovementImmediately();
     
-     // AI 컨트롤러와의 연결 끊기
+    // AI 컨트롤러와의 연결 끊기
     if (AController* AIController = GetController())
     {
         AIController->UnPossess();
@@ -266,4 +277,30 @@ void AEnemyCharacter::WakeUp()
     }
 
     UE_LOG(LogTemp, Warning, TEXT("Enemy woke up from sleep"));
+}
+
+void AEnemyCharacter::UpdateDetectionRangeForPlayerState(AFPSCharacter* Player)
+{
+    if (!Player) return;
+
+    ECharacterState CurrentPlayerState = Player->GetCurrentState();
+    
+    switch (CurrentPlayerState)
+    {
+        case ECharacterState::Sprinting:
+            DetectionRange = 900.0f;  // 달리기: 기본 범위의 1.5배
+            break;
+            
+        case ECharacterState::Crouching:
+            DetectionRange = 300.0f;  // 앉기: 기본 범위의 0.5배
+            break;
+            
+        case ECharacterState::Dead:
+            DetectionRange = 0.0f;    // 사망: 감지 안함
+            break;
+            
+        default:  // Normal 상태
+            DetectionRange = 600.0f;  // 걷기: 기본 감지 범위
+            break;
+    }
 }

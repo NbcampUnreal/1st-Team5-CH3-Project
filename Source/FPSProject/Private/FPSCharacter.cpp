@@ -35,6 +35,8 @@ AFPSCharacter::AFPSCharacter()
     Health = 100.0f;
 
     GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+
+    PrimaryActorTick.bCanEverTick = true;
 }
 
 void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -64,7 +66,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
                 EnhancedInput->BindAction(PlayerController->SprintAction, ETriggerEvent::Triggered, this, &AFPSCharacter::StartSprint);
                 EnhancedInput->BindAction(PlayerController->SprintAction, ETriggerEvent::Completed, this, &AFPSCharacter::StopSprint);
             }
-            if (PlayerController->Viewpoint_TransformationAction) // 여기가 중요!
+            if (PlayerController->Viewpoint_TransformationAction)
             {
                 UE_LOG(LogTemp, Warning, TEXT("Binding Viewpoint_Transformation Action!"));
                 EnhancedInput->BindAction(PlayerController->Viewpoint_TransformationAction, ETriggerEvent::Triggered, this, &AFPSCharacter::Viewpoint_Transformation);
@@ -74,8 +76,48 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
                 EnhancedInput->BindAction(PlayerController->CrouchAction, ETriggerEvent::Started, this, &AFPSCharacter::StartCrouch);
                 EnhancedInput->BindAction(PlayerController->CrouchAction, ETriggerEvent::Completed, this, &AFPSCharacter::StopCrouch);
             }
+            // 1, 2번 무기 변경 바인딩 - PlayerController가 아니라 FPSCharacter에서 직접 바인딩
+            if (PlayerController->SelectWeapon1Action)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("wepon1!"));
+                EnhancedInput->BindAction(PlayerController->SelectWeapon1Action, ETriggerEvent::Started, this, &AFPSCharacter::SelectWeapon1);
+            }
+
+            if (PlayerController->SelectWeapon2Action)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("wepon2!"));
+                EnhancedInput->BindAction(PlayerController->SelectWeapon2Action, ETriggerEvent::Started, this, &AFPSCharacter::SelectWeapon2);
+            }
+            if (PlayerController->FireAction)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("FireAction 바인딩 완료!"));
+                EnhancedInput->BindAction(PlayerController->FireAction, ETriggerEvent::Started, this, &AFPSCharacter::Fire);
+            }
+
 
         }
+
+       
+    }
+}
+
+
+void AFPSCharacter::BeginPlay()
+{
+    Super::BeginPlay();
+
+    UE_LOG(LogTemp, Warning, TEXT("BeginPlay 실행됨!"));
+    UE_LOG(LogTemp, Warning, TEXT("WeaponClasses 개수: %d"), WeaponClasses.Num());
+
+    // 처음 무기 장착 (0번 무기)
+    if (WeaponClasses.Num() > 0)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("wepon1!"));
+        EquipWeapon(0);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("WeaponClasses 배열이 비어 있음!"));
     }
 }
 
@@ -275,6 +317,17 @@ void AFPSCharacter::Viewpoint_Transformation()
     UE_LOG(LogTemp, Warning, TEXT("Switched to %s"), bIsFirstPerson ? TEXT("First Person") : TEXT("Third Person"));
 }
 
+void AFPSCharacter::SelectWeapon1()
+{
+    UE_LOG(LogTemp, Warning, TEXT("무기 1 선택됨!"));
+    EquipWeapon(0);
+}
+
+void AFPSCharacter::SelectWeapon2()
+{
+    UE_LOG(LogTemp, Warning, TEXT("무기 2 선택됨!"));
+    EquipWeapon(1);
+}
 
 
 
@@ -349,3 +402,58 @@ void AFPSCharacter::HandleStateChange(ECharacterState NewState)
         *UEnum::GetValueAsString(NewState));
 }
 
+void AFPSCharacter::EquipWeapon(int32 WeaponIndex)
+{
+    if (WeaponIndex < 0 || WeaponIndex >= WeaponClasses.Num())
+        return;
+
+    // 기존 무기 삭제
+    if (CurrentWeapon)
+    {
+        CurrentWeapon->Destroy();
+        CurrentWeapon = nullptr;
+    }
+
+    // 🔹 소켓이 있는지 확인 (없으면 오류 메시지 출력)
+    if (!GetMesh()->DoesSocketExist(TEXT("WeaponSocket")))
+    {
+        UE_LOG(LogTemp, Error, TEXT("WeaponSocket이 존재하지 않습니다! 손에 무기를 부착할 수 없습니다."));
+        return;
+    }
+
+    // 무기 생성 위치와 회전 설정
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = this;
+    SpawnParams.Instigator = GetInstigator();
+
+    FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("WeaponSocket")); // 🔹 소켓 위치 사용
+    FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("WeaponSocket"));
+
+    // 새 무기 생성
+    CurrentWeapon = GetWorld()->SpawnActor<ASimWeapon>(WeaponClasses[WeaponIndex], SpawnLocation, SpawnRotation, SpawnParams);
+
+    if (CurrentWeapon)
+    {
+        // 🔹 손의 "WeaponSocket"에 부착
+        CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
+        UE_LOG(LogTemp, Warning, TEXT("무기 %d 장착됨!"), WeaponIndex);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("무기 스폰 실패!"));
+    }
+}
+
+
+void AFPSCharacter::Fire()
+{
+    if (CurrentWeapon)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Fire() 호출됨, 무기 발사!"));
+        CurrentWeapon->Fire();
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Fire() 호출됨, 하지만 무기가 없음!"));
+    }
+}
