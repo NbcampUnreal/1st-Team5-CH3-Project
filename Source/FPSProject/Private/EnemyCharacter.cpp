@@ -3,6 +3,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "EnemyAIController.h"
 #include "BasicGameInstance.h"
+#include "GameFramework/DamageType.h"
 
 AEnemyCharacter::AEnemyCharacter()
 {
@@ -25,6 +26,16 @@ AEnemyCharacter::AEnemyCharacter()
     // 무기 메시 컴포넌트 생성
     WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
     WeaponMesh->SetupAttachment(GetMesh(), "WeaponSocket_L");
+    
+    // 무기 끝에 충돌 박스 생성
+    WeaponTipCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("WeaponTipCollision"));
+    WeaponTipCollision->SetupAttachment(WeaponMesh, "WeaponTip");
+    WeaponTipCollision->SetCollisionProfileName(TEXT("Weapon"));
+    WeaponTipCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    WeaponTipCollision->SetBoxExtent(FVector(5.0f, 20.0f, 20.0f)); // 박스 크기 설정
+    
+    // 충돌 이벤트 바인딩
+    WeaponTipCollision->OnComponentBeginOverlap.AddDynamic(this, &AEnemyCharacter::OnWeaponOverlap);
 }
 
 void AEnemyCharacter::BeginPlay()
@@ -32,6 +43,53 @@ void AEnemyCharacter::BeginPlay()
     Super::BeginPlay();
     CurrentHealth = MaxHealth;
     UpdateMovementSpeed();  // 초기 속도 설정
+    
+    // 무기 충돌 초기 비활성화
+    SetWeaponCollisionEnabled(false);
+    
+    // 디버그 모드에서 충돌 박스 시각화 (선택적)
+    WeaponTipCollision->bHiddenInGame = false;
+    
+    // 디버그 시각화를 위한 타이머 설정
+    GetWorld()->GetTimerManager().SetTimer(
+        DebugTimerHandle,
+        this,
+        &AEnemyCharacter::DrawDebugWeaponCollision,
+        0.1f,  // 0.1초마다 업데이트
+        true   // 반복 실행
+    );
+}
+
+// 무기 충돌 활성화/비활성화 함수
+void AEnemyCharacter::SetWeaponCollisionEnabled(bool bEnabled)
+{
+    bWeaponCollisionEnabled = bEnabled;
+    WeaponTipCollision->SetCollisionEnabled(bEnabled ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
+    
+    UE_LOG(LogTemp, Warning, TEXT("Weapon collision %s"), bEnabled ? TEXT("enabled") : TEXT("disabled"));
+}
+
+// 무기 충돌 감지 함수
+void AEnemyCharacter::OnWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
+                                    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, 
+                                    bool bFromSweep, const FHitResult& SweepResult)
+{
+    // 충돌이 비활성화되었거나 자기 자신과 충돌한 경우 무시
+    if (!bWeaponCollisionEnabled || OtherActor == this)
+        return;
+        
+    // 플레이어와 충돌했는지 확인
+    AFPSCharacter* Player = Cast<AFPSCharacter>(OtherActor);
+    if (Player && Player->IsAlive())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Weapon hit player! Applying damage: %f"), WeaponDamage);
+        
+        // 데미지 적용
+        Player->TakeDamage(WeaponDamage);
+        
+        // 충돌 비활성화 (한 번의 공격에 한 번만 데미지)
+        SetWeaponCollisionEnabled(false);
+    }
 }
 
 float AEnemyCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, 
@@ -91,6 +149,9 @@ void AEnemyCharacter::Die()
     
     // 콜리전 비활성화
     GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    
+    // 무기 충돌 비활성화
+    SetWeaponCollisionEnabled(false);
 
     // 일정 시간 후 액터 제거
     SetLifeSpan(3.0f);
@@ -121,6 +182,24 @@ void AEnemyCharacter::Attack()
         
         // PlayRate를 고려한 실제 재생 시간 계산
         float ActualDuration = OriginalDuration / PlayRate;
+        
+        // 공격 시작 시 무기 충돌 활성화 (애니메이션 시작 후 약간의 지연)
+        FTimerHandle WeaponEnableTimerHandle;
+        GetWorld()->GetTimerManager().SetTimer(
+            WeaponEnableTimerHandle,
+            [this]() { SetWeaponCollisionEnabled(true); },
+            ActualDuration * 0.3f, // 애니메이션의 30% 지점에서 충돌 활성화
+            false
+        );
+        
+        // 공격 종료 시 무기 충돌 비활성화
+        FTimerHandle WeaponDisableTimerHandle;
+        GetWorld()->GetTimerManager().SetTimer(
+            WeaponDisableTimerHandle,
+            [this]() { SetWeaponCollisionEnabled(false); },
+            ActualDuration * 0.7f, // 애니메이션의 70% 지점에서 충돌 비활성화
+            false
+        );
 
         // 실제 재생 시간으로 타이머 설정
         GetWorld()->GetTimerManager().SetTimer(
@@ -300,5 +379,19 @@ void AEnemyCharacter::UpdateDetectionRangeForPlayerState(AFPSCharacter* Player)
         default:  // Normal 상태
             DetectionRange = 600.0f;  // 걷기: 기본 감지 범위
             break;
+    }
+}
+
+// 디버그 시각화 함수 추가
+void AEnemyCharacter::DrawDebugWeaponCollision()
+{
+    if (WeaponTipCollision)
+    {
+        FVector BoxLocation = WeaponTipCollision->GetComponentLocation();
+        FVector BoxExtent = WeaponTipCollision->GetScaledBoxExtent();
+        FColor DebugColor = bWeaponCollisionEnabled ? FColor::Red : FColor::Green;
+        
+        // 충돌 박스 그리기
+        DrawDebugBox(GetWorld(), BoxLocation, BoxExtent, DebugColor, false, 0.11f, 0, 2.0f);
     }
 }
