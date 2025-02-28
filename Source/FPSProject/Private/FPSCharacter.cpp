@@ -210,7 +210,7 @@ void AFPSCharacter::Die()
     GetCharacterMovement()->DisableMovement();
     DisableInput(Cast<APlayerController>(GetController()));
 
-    AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(GetController());
+    APlayerController* PlayerController = Cast<APlayerController>(GetController());
     if (PlayerController)
     {
         PlayerController->SetIgnoreLookInput(true);
