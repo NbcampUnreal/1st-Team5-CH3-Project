@@ -18,7 +18,7 @@ class FPSPROJECT_API AEnemyCharacter : public ACharacter, public ICharacterInter
 public:
     AEnemyCharacter();
 
-    // AActor의 TakeDamage 오버라이드드
+    // AActor의 TakeDamage 오버라이드
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, 
                            class AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -86,7 +86,6 @@ protected:
     UPROPERTY(EditDefaultsOnly, Category = "Animation")
     UAnimMontage* DeathMontage;
 
-    // protected 섹션에 추가
     UPROPERTY(EditAnywhere, Category = "AI|Movement")
     float PatrolSpeed = 200.0f;
 
@@ -105,14 +104,22 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
     UAnimMontage* AttackMontage;
 
-    // 무기 애니메이션 몽타주들
+    // 무기 애니메이션 몽타주
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation|Weapon")
     UAnimMontage* WeaponAttackMontage;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation|Weapon")
     UAnimMontage* WeaponWalkMontage;
 
-    // 공격 관련 변수들
+    // 피격 애니메이션 몽타주
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+    UAnimMontage* HitReactionMontage;
+    
+    // 피격 사운드
+    UPROPERTY(EditDefaultsOnly, Category = "Sound")
+    USoundBase* HitSound;
+
+    // 공격 관련 변수
     UPROPERTY(EditAnywhere, Category = "AI|Combat")
     float AttackCooldown = 2.0f;    // 기본 공격 쿨타임
 
@@ -126,7 +133,7 @@ protected:
     bool bCanAttack = true;
     FTimerHandle AttackCooldownTimer;
     FTimerHandle AttackTimerHandle;
-
+    
     // 헤더에 상태별 감지 범위 수정자 추가
     UPROPERTY(EditAnywhere, Category = "AI|Detection")
     float BaseDetectionRange = 600.0f;  // 기존 DetectionRange 값을 기본값으로
