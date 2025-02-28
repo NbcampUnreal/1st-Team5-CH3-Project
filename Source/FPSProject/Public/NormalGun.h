@@ -12,4 +12,6 @@ class FPSPROJECT_API ANormalGun : public AWeapon
 public:
     ANormalGun();
     virtual void Fire() override;
+
+    virtual void Reload() override;  // 탄약 재장전
 };
