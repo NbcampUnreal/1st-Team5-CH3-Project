@@ -210,7 +210,7 @@ void AFPSCharacter::Die()
     GetCharacterMovement()->DisableMovement();
     DisableInput(Cast<APlayerController>(GetController()));
 
-    APlayerController* PlayerController = Cast<APlayerController>(GetController());
+    AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(GetController());
     if (PlayerController)
     {
         PlayerController->SetIgnoreLookInput(true);
@@ -227,6 +227,7 @@ void AFPSCharacter::Die()
     if (DeathMontage)
     {
         float MontageDuration = PlayAnimMontage(DeathMontage);
+        PlayerController->ShowGameOverScreen();
         GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &AFPSCharacter::DestroyCharacter, MontageDuration, false);
     }
     else

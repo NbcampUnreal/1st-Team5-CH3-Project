@@ -6,6 +6,7 @@
 
 class UInputMappingContext;
 class UInputAction;
+class UUserWidget;
 
 UCLASS()
 class FPSPROJECT_API AFPSPlayerController : public APlayerController
