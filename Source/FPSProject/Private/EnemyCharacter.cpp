@@ -95,6 +95,83 @@ void AEnemyCharacter::TakeDamage(float DamageAmount)
     CurrentHealth = FMath::Max(0.0f, CurrentHealth - DamageAmount);
     UE_LOG(LogTemp, Warning, TEXT("Enemy took damage: %f, Current Health: %f"), DamageAmount, CurrentHealth);
     
+    // 현재 공격 애니메이션이 재생 중이면 중단
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    if (AnimInstance && AttackMontage && AnimInstance->Montage_IsPlaying(AttackMontage))
+    {
+        AnimInstance->Montage_Stop(0.1f, AttackMontage);
+        UE_LOG(LogTemp, Warning, TEXT("Stopping attack animation due to hit"));
+        
+        // 공격 타이머 취소
+        GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+        
+        // 공격 쿨다운 재설정 (피격 후 바로 공격하지 못하도록)
+        bCanAttack = false;
+        GetWorld()->GetTimerManager().SetTimer(
+            AttackCooldownTimer,
+            [this]() { bCanAttack = true; },
+            AttackCooldown * 0.5f, // 피격 후에는 쿨다운을 절반으로 줄임
+            false
+        );
+    }
+    
+    // 피격 애니메이션 재생
+    if (HitReactionMontage)
+    {
+        // AI 컨트롤러의 행동 일시 중지
+        if (AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController()))
+        {
+            AIController->GetBrainComponent()->StopLogic("Hit Reaction");
+            UE_LOG(LogTemp, Warning, TEXT("Stopping AI behavior for hit reaction"));
+            
+            // 이동 중지
+            GetCharacterMovement()->StopMovementImmediately();
+        }
+        
+        // 현재 재생 중인 애니메이션을 중지하고 새로운 피격 애니메이션 재생
+        StopAnimMontage();
+        
+        // 피격 애니메이션 재생 속도 설정
+        float PlayRate = 1.5f;
+        
+        // 원래 애니메이션 길이를 가져옴
+        float OriginalDuration = PlayAnimMontage(HitReactionMontage, PlayRate);
+        
+        // PlayRate를 고려한 실제 재생 시간 계산
+        float ActualDuration = OriginalDuration / PlayRate;
+        
+        UE_LOG(LogTemp, Warning, TEXT("Playing hit reaction animation - Original Duration: %f, Actual Duration: %f"), 
+            OriginalDuration, ActualDuration);
+        
+        // 피격 애니메이션이 끝난 후 AI 행동 재개를 위한 타이머 설정
+        FTimerHandle HitRecoveryTimerHandle;
+        GetWorld()->GetTimerManager().SetTimer(
+            HitRecoveryTimerHandle,
+            [this]() {
+                // AI 컨트롤러의 행동 재개
+                if (AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController()))
+                {
+                    // 행동 로직 재개
+                    AIController->GetBrainComponent()->StartLogic();
+                    
+                    // 현재 행동 트리 재시작
+                    AIController->GetBrainComponent()->RestartLogic();
+                    
+                    UE_LOG(LogTemp, Warning, TEXT("Hit reaction finished, resuming AI behavior"));
+                }
+            },
+            ActualDuration * 0.9f, // 애니메이션이 거의 끝날 때 행동 재개
+            false
+        );
+    }
+    
+    // 피격 사운드 재생
+    if (HitSound)
+    {
+        UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
+        UE_LOG(LogTemp, Warning, TEXT("Playing hit sound"));
+    }
+    
     if (CurrentHealth <= 0.0f)
     {
         Die();
@@ -167,6 +244,15 @@ void AEnemyCharacter::Die()
 void AEnemyCharacter::Attack()
 {
     if (bIsDead || !bCanAttack) return;
+
+    // 현재 피격 애니메이션이 재생 중인지 확인
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    if (AnimInstance && HitReactionMontage && AnimInstance->Montage_IsPlaying(HitReactionMontage))
+    {
+        // 피격 애니메이션이 재생 중이면 공격하지 않음
+        UE_LOG(LogTemp, Warning, TEXT("Cannot attack while hit reaction animation is playing"));
+        return;
+    }
 
     // 플레이어 방향으로 회전
     AActor* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
