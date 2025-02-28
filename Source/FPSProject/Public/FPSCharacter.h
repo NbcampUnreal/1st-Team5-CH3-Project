@@ -4,6 +4,8 @@
 #include "GameFramework/Character.h"
 #include "CharacterInterface.h"
 #include "Weapon.h" 
+#include "EnhancedInputComponent.h" 
+#include "EnhancedInputSubsystems.h" 
 #include "FPSCharacter.generated.h"
 
 class USpringArmComponent;
@@ -47,6 +49,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void StopCrouch(const FInputActionValue& Value);
+
 
 
 	UFUNCTION(BlueprintCallable, Category = "Character Stats")
@@ -101,6 +104,12 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputMappingContext* InputMappingContext;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* FireAction;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USpringArmComponent* SpringArmComp;
