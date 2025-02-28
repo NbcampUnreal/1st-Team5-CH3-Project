@@ -47,6 +47,8 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
     if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
     {
+        EnhancedInput->BindAction(FireAction, ETriggerEvent::Triggered, this, &AFPSCharacter::Fire);
+
         AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(GetController());
         if (PlayerController)
         {
@@ -110,6 +112,16 @@ void AFPSCharacter::BeginPlay()
 
     // WeaponList 배열 크기를 WeaponClasses 크기에 맞게 설정
     WeaponList.SetNum(WeaponClasses.Num());
+
+    APlayerController* PlayerController = Cast<APlayerController>(GetController());
+    if (PlayerController)
+    {
+        UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+        if (InputSystem && InputMappingContext)
+        {
+            InputSystem->AddMappingContext(InputMappingContext, 0);
+        }
+        }
 
     // 기본 무기 장착
     if (WeaponClasses.Num() > 0)
