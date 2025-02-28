@@ -44,7 +44,9 @@ void ARallyPoint::OnOverlapBegin(
 
 		if (ABasicGameState* BasicGameState = GetWorld()->GetGameState<ABasicGameState>())
 		{
+
 			BasicGameState->SetGamePhase(NextPhase);
+
 			if (GEngine)
 			{ 
 				FString PhaseMessage = FString::Printf(TEXT("Phase Changed: %s"), *UEnum::GetValueAsString(BasicGameState->CurrentPhase));

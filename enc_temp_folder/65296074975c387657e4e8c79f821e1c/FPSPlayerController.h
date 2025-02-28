@@ -36,6 +36,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	UInputAction* CrouchAction;
 
+	// 무기 변경을 위한 Input Action 추가
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	UInputAction* SelectWeapon1Action;
 
@@ -45,20 +46,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	UInputAction* FireAction;
 
-	//Widget
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Menu")
-	TSubclassOf<UUserWidget> HUDWidgetClass;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Menu")
-	UUserWidget* HUDWidgetInstance;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameOver")
-	TSubclassOf<UUserWidget> GameOverWidgetClass;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "GameOver")
-	UUserWidget* GameOverWidgetInstance;
-
-
-	UFUNCTION()
-	void ShowGameOverScreen();
-
 	virtual void BeginPlay() override;
+
+
+
 };

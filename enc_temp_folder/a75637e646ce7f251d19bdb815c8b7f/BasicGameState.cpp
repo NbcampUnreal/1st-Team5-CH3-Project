@@ -37,7 +37,8 @@ void ABasicGameState::OnGameOver()
     if (AFPSPlayerController* PlayerController = GetFPSPlayerController())
     {
         PlayerController->SetPause(true);
-        PlayerController->ShowGameOverScreen();
+        
+        //PlayerController->ShowMainMenu(true);
     }
 }
 
