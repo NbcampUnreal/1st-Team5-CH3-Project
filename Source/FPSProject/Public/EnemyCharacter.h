@@ -55,6 +55,9 @@ public:
 
     // 플레이어 상태에 따라 감지 범위 업데이트
     void UpdateDetectionRangeForPlayerState(AFPSCharacter* Player);
+    
+    // 무기 애니메이션 재생 함수
+    void PlayWeaponAnimation(UAnimMontage* WeaponAnimation);
 
 protected:
     virtual void BeginPlay() override;
@@ -102,6 +105,13 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
     UAnimMontage* AttackMontage;
 
+    // 무기 애니메이션 몽타주들
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation|Weapon")
+    UAnimMontage* WeaponAttackMontage;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation|Weapon")
+    UAnimMontage* WeaponWalkMontage;
+
     // 공격 관련 변수들
     UPROPERTY(EditAnywhere, Category = "AI|Combat")
     float AttackCooldown = 2.0f;    // 기본 공격 쿨타임
@@ -127,8 +137,13 @@ protected:
     UPROPERTY(EditAnywhere, Category = "AI|Detection")
     float CrouchingRangeMultiplier = 0.5f;
 
-    UPROPERTY(VisibleAnywhere, Category = "Weapon")
+    // 무기 메시 컴포넌트
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
     USkeletalMeshComponent* WeaponMesh;
+    
+    // 무기 데미지
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+    float WeaponDamage = 20.0f;
 
 private:
     // 사망 상태

@@ -3,6 +3,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "EnemyAIController.h"
 #include "BasicGameInstance.h"
+#include "GameFramework/DamageType.h"
 
 AEnemyCharacter::AEnemyCharacter()
 {
@@ -25,6 +26,16 @@ AEnemyCharacter::AEnemyCharacter()
     // 무기 메시 컴포넌트 생성
     WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
     WeaponMesh->SetupAttachment(GetMesh(), "WeaponSocket_L");
+    
+    // 무기 위치 및 회전 조정 (공격 방향 수정)
+    WeaponMesh->SetRelativeLocation(FVector(0.0f, -10.0f, 50.0f));
+    WeaponMesh->SetRelativeRotation(FRotator(69.0f, -55.1f, 56.1f));
+    
+    // 물리 시뮬레이션을 위한 설정
+    WeaponMesh->SetCollisionProfileName(TEXT("PhysicsActor"));
+    WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    WeaponMesh->SetSimulatePhysics(false); // 기본적으로는 비활성화
+    WeaponMesh->SetEnableGravity(true);    // 중력 활성화
 }
 
 void AEnemyCharacter::BeginPlay()
@@ -32,6 +43,37 @@ void AEnemyCharacter::BeginPlay()
     Super::BeginPlay();
     CurrentHealth = MaxHealth;
     UpdateMovementSpeed();  // 초기 속도 설정
+    
+    // 무기 애니메이션 인스턴스 확인
+    if (WeaponMesh)
+    {
+        UAnimInstance* WeaponAnimInstance = WeaponMesh->GetAnimInstance();
+        if (WeaponAnimInstance)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Weapon Animation Instance is valid"));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Weapon Animation Instance is NULL - 에디터에서 무기 메시에 애니메이션 블루프린트를 설정해주세요"));
+            
+            // 스켈레탈 메시 정보 출력
+            if (WeaponMesh->GetSkeletalMeshAsset())
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Weapon Skeletal Mesh: %s"), 
+                    *WeaponMesh->GetSkeletalMeshAsset()->GetName());
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Weapon Skeletal Mesh is not set"));
+            }
+        }
+    }
+    
+    // 걷기 애니메이션 시작
+    if (WeaponWalkMontage)
+    {
+        PlayWeaponAnimation(WeaponWalkMontage);
+    }
 }
 
 float AEnemyCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, 
@@ -78,6 +120,32 @@ void AEnemyCharacter::Die()
     if (DeathMontage)
     {
         PlayAnimation(DeathMontage);
+        
+        // 무기 물리 시뮬레이션 활성화
+        if (WeaponMesh)
+        {
+            // 무기를 소켓에서 분리
+            WeaponMesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+            
+            // 물리 시뮬레이션 활성화
+            WeaponMesh->SetSimulatePhysics(true);
+            
+            // 충돌 활성화
+            WeaponMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+            
+            // 캐릭터와 충돌하지 않도록 설정
+            WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+            
+            // 약간의 임펄스 추가하여 자연스럽게 떨어지도록 함
+            WeaponMesh->AddImpulse(FVector(0.0f, 0.0f, -100.0f));
+            
+            // 약간의 회전도 추가
+            WeaponMesh->AddAngularImpulseInDegrees(FVector(FMath::RandRange(-20.0f, 20.0f), 
+                                                          FMath::RandRange(-20.0f, 20.0f), 
+                                                          FMath::RandRange(-20.0f, 20.0f)));
+            
+            UE_LOG(LogTemp, Warning, TEXT("Weapon detached and physics simulation enabled"));
+        }
     }
 
     // AI 이동 중지
@@ -91,7 +159,7 @@ void AEnemyCharacter::Die()
     
     // 콜리전 비활성화
     GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
+    
     // 일정 시간 후 액터 제거
     SetLifeSpan(3.0f);
 }
@@ -119,9 +187,60 @@ void AEnemyCharacter::Attack()
         // 원래 애니메이션 길이를 가져옴
         float OriginalDuration = PlayAnimMontage(AttackMontage, PlayRate);
         
+        // 무기 공격 애니메이션도 재생
+        if (WeaponAttackMontage)
+        {
+            PlayWeaponAnimation(WeaponAttackMontage);
+        }
+        
+        // 무기 방향 조정 (플레이어를 향해 정확히 찌르도록)
+        if (WeaponMesh && Player)
+        {
+            // 플레이어 방향으로 무기 회전 조정
+            FVector DirectionToPlayer = (Player->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+            FRotator DesiredRotation = DirectionToPlayer.Rotation();
+            
+            UE_LOG(LogTemp, Warning, TEXT("Attack started"));
+        }
+        
         // PlayRate를 고려한 실제 재생 시간 계산
         float ActualDuration = OriginalDuration / PlayRate;
-
+        
+        // 공격 데미지 적용 타이머 (애니메이션의 중간 지점에서)
+        FTimerHandle DamageTimerHandle;
+        GetWorld()->GetTimerManager().SetTimer(
+            DamageTimerHandle,
+            [this, Player]() {
+                // 플레이어가 유효하고 살아있는지 확인
+                AFPSCharacter* FPSPlayer = Cast<AFPSCharacter>(Player);
+                if (FPSPlayer && FPSPlayer->IsAlive())
+                {
+                    // 거리 계산
+                    float DistToPlayer = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
+                    
+                    // 공격 방향 벡터
+                    FVector AttackDirection = (Player->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+                    
+                    // 캐릭터의 전방 벡터와 공격 방향 벡터의 내적 계산 (각도 확인)
+                    float DotProduct = FVector::DotProduct(GetActorForwardVector(), AttackDirection);
+                    
+                    // 거리가 공격 범위 내이고, 내적이 0.7 이상(약 45도 이내)이면 데미지 적용
+                    if (DistToPlayer <= AttackRange && DotProduct >= 0.7f)
+                    {
+                        UE_LOG(LogTemp, Warning, TEXT("Attack hit player! Applying damage: %f"), WeaponDamage);
+                        FPSPlayer->TakeDamage(WeaponDamage);
+                    }
+                    else
+                    {
+                        UE_LOG(LogTemp, Warning, TEXT("Attack missed! Distance: %f, Angle: %f"), 
+                            DistToPlayer, FMath::Acos(DotProduct) * 180.0f / PI);
+                    }
+                }
+            },
+            ActualDuration * 0.5f, // 애니메이션의 50% 지점에서 데미지 계산
+            false
+        );
+        
         // 실제 재생 시간으로 타이머 설정
         GetWorld()->GetTimerManager().SetTimer(
             AttackTimerHandle,
@@ -145,6 +264,12 @@ void AEnemyCharacter::Attack()
                             AIController->MoveToActor(Player);
                             bIsChasing = true;
                             UpdateMovementSpeed();
+                            
+                            // 걷기 애니메이션 재생
+                            if (WeaponWalkMontage)
+                            {
+                                PlayWeaponAnimation(WeaponWalkMontage);
+                            }
                         }
                     }
                 }
@@ -300,5 +425,28 @@ void AEnemyCharacter::UpdateDetectionRangeForPlayerState(AFPSCharacter* Player)
         default:  // Normal 상태
             DetectionRange = 600.0f;  // 걷기: 기본 감지 범위
             break;
+    }
+}
+
+// 무기 애니메이션 재생 함수 추가
+void AEnemyCharacter::PlayWeaponAnimation(UAnimMontage* WeaponAnimation)
+{
+    if (WeaponAnimation && WeaponMesh)
+    {
+        // 무기 메시의 애니메이션 인스턴스 가져오기
+        UAnimInstance* WeaponAnimInstance = WeaponMesh->GetAnimInstance();
+        if (WeaponAnimInstance)
+        {
+            float Duration = WeaponAnimInstance->Montage_Play(WeaponAnimation);
+            UE_LOG(LogTemp, Warning, TEXT("Weapon Animation Duration: %f"), Duration);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("Weapon Animation Instance is null!"));
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Weapon Animation or WeaponMesh is null!"));
     }
 }
