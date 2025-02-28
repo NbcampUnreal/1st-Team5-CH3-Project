@@ -44,18 +44,6 @@ void AEnemyCharacter::BeginPlay()
     CurrentHealth = MaxHealth;
     UpdateMovementSpeed();  // 초기 속도 설정
     
-    // 캡슐 컴포넌트에 충돌 이벤트 바인딩
-    GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AEnemyCharacter::OnComponentHit);
-    
-    // 메시 컴포넌트에도 충돌 이벤트 바인딩
-    GetMesh()->OnComponentHit.AddDynamic(this, &AEnemyCharacter::OnComponentHit);
-    
-    // 무기 메시에도 충돌 이벤트 바인딩
-    if (WeaponMesh)
-    {
-        WeaponMesh->OnComponentHit.AddDynamic(this, &AEnemyCharacter::OnComponentHit);
-    }
-
     // 무기 애니메이션 인스턴스 확인
     if (WeaponMesh)
     {
@@ -546,44 +534,5 @@ void AEnemyCharacter::PlayWeaponAnimation(UAnimMontage* WeaponAnimation)
     else
     {
         UE_LOG(LogTemp, Error, TEXT("Weapon Animation or WeaponMesh is null!"));
-    }
-}
-
-// 총알 충돌 감지 함수 구현
-void AEnemyCharacter::OnBulletHit(float Damage, AActor* BulletOwner)
-{
-    if (bIsDead) return;
-    
-    UE_LOG(LogTemp, Warning, TEXT("AI가 총알에 맞았습니다! 데미지: %f"), Damage);
-    
-    // 데미지 적용
-    TakeDamage(Damage);
-    
-    // 피격 방향 계산)
-    if (BulletOwner)
-    {
-        FVector HitDirection = GetActorLocation() - BulletOwner->GetActorLocation();
-        HitDirection.Normalize();
-        
-        // 약간의 넉백 효과
-        GetCharacterMovement()->AddImpulse(HitDirection * 500.0f, true);
-    }
-}
-
-// 컴포넌트 충돌 이벤트 구현
-void AEnemyCharacter::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
-                                    UPrimitiveComponent* OtherComp, FVector NormalImpulse, 
-                                    const FHitResult& Hit)
-{
-    // 충돌한 액터가 총알인지 확인
-    if (OtherActor && OtherActor->ActorHasTag("Bullet"))
-    {
-        UE_LOG(LogTemp, Warning, TEXT("AI가 총알 컴포넌트와 충돌했습니다: %s"), *OtherActor->GetName());
-        
-        // 데미지 적용
-        OnBulletHit(10.0f, OtherActor->GetOwner());
-        
-        // 총알 제거
-        OtherActor->Destroy();
     }
 }

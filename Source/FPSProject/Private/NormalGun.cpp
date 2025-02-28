@@ -18,5 +18,4 @@ void ANormalGun::Fire()
     {
         UE_LOG(LogTemp, Warning, TEXT("Gun Out of Ammo! Reload Needed."));
     }
-
 }
