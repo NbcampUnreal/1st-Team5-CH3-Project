@@ -19,16 +19,3 @@ void ANormalGun::Fire()
         UE_LOG(LogTemp, Warning, TEXT("Gun Out of Ammo! Reload Needed."));
     }
 }
-
-void ANormalGun::Reload()
-{
-    if (CurrentAmmo < MaxAmmo)
-    {
-        CurrentAmmo = MaxAmmo;
-        UE_LOG(LogTemp, Warning, TEXT("NormalGun 재장전 완료! 탄약: %d/%d"), CurrentAmmo, MaxAmmo);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("탄약이 이미 최대입니다!"));
-    }
-}

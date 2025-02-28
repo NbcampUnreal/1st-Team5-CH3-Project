@@ -467,11 +467,6 @@ void AFPSCharacter::ReloadWeapon()
 {
     if (EquippedWeapon)
     {
-        UE_LOG(LogTemp, Warning, TEXT("ReloadWeapon() 호출됨!"));
         EquippedWeapon->Reload();
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("현재 장착된 무기가 없습니다!"));
     }
 }
