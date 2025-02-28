@@ -1,8 +1,7 @@
 #include "FPSPlayerController.h"
 #include "EnhancedInputSubsystems.h"   
 #include "EnhancedInputComponent.h"    
-#include "FPSCharacter.h" 
-#include "Weapon.h" 
+#include "FPSCharacter.h"   
 
 AFPSPlayerController::AFPSPlayerController()
     : InputMappingContext(nullptr),
@@ -14,8 +13,7 @@ AFPSPlayerController::AFPSPlayerController()
     Viewpoint_TransformationAction(nullptr),
     SelectWeapon1Action(nullptr),
     SelectWeapon2Action(nullptr),
-    FireAction(nullptr),
-    ReloadAction(nullptr)
+    FireAction(nullptr)
 {
 }
 

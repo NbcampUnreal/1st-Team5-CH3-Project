@@ -93,11 +93,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
                 UE_LOG(LogTemp, Warning, TEXT("FireAction 바인딩 완료!"));
                 EnhancedInput->BindAction(PlayerController->FireAction, ETriggerEvent::Started, this, &AFPSCharacter::Fire);
             }
-            if (PlayerController->ReloadAction)
-            {
-                UE_LOG(LogTemp, Warning, TEXT("Binding ReloadAction Action!"));
-                EnhancedInput->BindAction(PlayerController->ReloadAction, ETriggerEvent::Started, this, &AFPSCharacter::ReloadWeapon);
-            }
+
 
         }
 
@@ -459,14 +455,5 @@ void AFPSCharacter::Fire()
     else
     {
         UE_LOG(LogTemp, Warning, TEXT("Fire() 호출됨, 하지만 무기가 없음!"));
-    }
-}
-
-// R 키 입력 시 호출될 함수
-void AFPSCharacter::ReloadWeapon()
-{
-    if (EquippedWeapon)
-    {
-        EquippedWeapon->Reload();
     }
 }

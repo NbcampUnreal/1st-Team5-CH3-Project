@@ -149,7 +149,6 @@ protected:
 
 	void DestroyCharacter();
 
-
 	// AI 감지 시스템에서 참조할 현재 캐릭터 상태
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character State")
 	ECharacterState CurrentState = ECharacterState::Normal;
@@ -161,11 +160,4 @@ protected:
 	// 상태 변경 시 C++에서 처리할 로직
 	UFUNCTION()
 	virtual void HandleStateChange(ECharacterState NewState);
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-	AWeapon* EquippedWeapon;  // 현재 장착한 무기
-
-	// R 키를 눌렀을 때 호출될 함수
-	void ReloadWeapon();
-
 };
