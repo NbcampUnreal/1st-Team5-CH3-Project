@@ -92,7 +92,7 @@ void AFPSPlayerController::ShowGameOverScreen()
                 //SleepCount
             }
             if (UTextBlock* ScoreText = Cast<UTextBlock>(GameOverWidgetInstance->GetWidgetFromName(TEXT("ScoreText"))))
-            {//a
+            {
                 //Score
                 if (UBasicGameInstance* BasicGameInstance = Cast<UBasicGameInstance>(UGameplayStatics::GetGameInstance(this)))
                 {
