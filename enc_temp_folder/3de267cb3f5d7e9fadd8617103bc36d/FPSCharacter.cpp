@@ -6,8 +6,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "TimerManager.h"
 #include "CharacterInterface.h"
-#include "Kismet/GameplayStatics.h"
-#include "BasicGameState.h"
 
 AFPSCharacter::AFPSCharacter()
 {
@@ -212,7 +210,7 @@ void AFPSCharacter::Die()
     GetCharacterMovement()->DisableMovement();
     DisableInput(Cast<APlayerController>(GetController()));
 
-    AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(GetController());
+    APlayerController* PlayerController = Cast<APlayerController>(GetController());
     if (PlayerController)
     {
         PlayerController->SetIgnoreLookInput(true);
@@ -229,7 +227,6 @@ void AFPSCharacter::Die()
     if (DeathMontage)
     {
         float MontageDuration = PlayAnimMontage(DeathMontage);
-      
         GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &AFPSCharacter::DestroyCharacter, MontageDuration, false);
     }
     else
@@ -366,13 +363,6 @@ void AFPSCharacter::StopCrouch(const FInputActionValue& Value)
 
 void AFPSCharacter::DestroyCharacter()
 {
-    ABasicGameState* GameState = GetWorld() ? GetWorld()->GetGameState<ABasicGameState>() : nullptr;
-    if (GameState)
-    {
-        GameState->OnGameOver();
-    }
-
-
     Destroy();
 }
 
