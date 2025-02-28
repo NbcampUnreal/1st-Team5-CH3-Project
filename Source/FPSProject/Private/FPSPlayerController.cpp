@@ -13,7 +13,8 @@ AFPSPlayerController::AFPSPlayerController()
     Viewpoint_TransformationAction(nullptr),
     SelectWeapon1Action(nullptr),
     SelectWeapon2Action(nullptr),
-    FireAction(nullptr)
+    FireAction(nullptr),
+    ReloadAction(nullptr)
 {
 }
 
