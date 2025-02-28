@@ -82,13 +82,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 	TArray<TSubclassOf<AWeapon>> WeaponClasses;
 
-	// 현재 장착된 1인칭(FPS) 무기
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-	AWeapon* CurrentWeapon1P;
-
-	// 현재 장착된 3인칭(TPS) 무기
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-	AWeapon* CurrentWeapon3P;
+	// 생성된 무기 객체들을 저장하는 리스트
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
+	TArray<AWeapon*> WeaponList;
 
 
 	// 무기 장착 함수
