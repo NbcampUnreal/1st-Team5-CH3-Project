@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "CharacterInterface.h"
-#include "SimWeapon.h" 
+#include "Weapon.h" 
 #include "FPSCharacter.generated.h"
 
 class USpringArmComponent;
@@ -76,11 +76,20 @@ public:
 
 	// 현재 장착된 무기
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-	ASimWeapon* CurrentWeapon;
+	AWeapon* CurrentWeapon;
 
 	// 무기 배열 (다양한 무기를 저장)
 	UPROPERTY(EditAnywhere, Category = "Weapon")
-	TArray<TSubclassOf<ASimWeapon>> WeaponClasses;
+	TArray<TSubclassOf<AWeapon>> WeaponClasses;
+
+	// 현재 장착된 1인칭(FPS) 무기
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	AWeapon* CurrentWeapon1P;
+
+	// 현재 장착된 3인칭(TPS) 무기
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	AWeapon* CurrentWeapon3P;
+
 
 	// 무기 장착 함수
 	void EquipWeapon(int32 WeaponIndex);
@@ -90,6 +99,8 @@ public:
 	void SelectWeapon2();
 	// **총 발사 요청**
 	void Fire();
+
+
 protected:
 
 	virtual void BeginPlay() override;

@@ -97,7 +97,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
         }
 
-       
+
     }
 }
 
@@ -380,25 +380,25 @@ void AFPSCharacter::HandleStateChange(ECharacterState NewState)
 {
     switch (NewState)
     {
-        case ECharacterState::Normal:
-            GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
-            break;
-            
-        case ECharacterState::Sprinting:
-            GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
-            break;
-            
-        case ECharacterState::Crouching:
-            GetCharacterMovement()->MaxWalkSpeed = NormalSpeed * 0.5f;
-            break;
-            
-        case ECharacterState::Dead:
-            GetCharacterMovement()->StopMovementImmediately();
-            break;
+    case ECharacterState::Normal:
+        GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+        break;
+
+    case ECharacterState::Sprinting:
+        GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+        break;
+
+    case ECharacterState::Crouching:
+        GetCharacterMovement()->MaxWalkSpeed = NormalSpeed * 0.5f;
+        break;
+
+    case ECharacterState::Dead:
+        GetCharacterMovement()->StopMovementImmediately();
+        break;
     }
 
     // 상태 변경 로그
-    UE_LOG(LogTemp, Warning, TEXT("Character State Changed to: %s"), 
+    UE_LOG(LogTemp, Warning, TEXT("Character State Changed to: %s"),
         *UEnum::GetValueAsString(NewState));
 }
 
@@ -414,7 +414,7 @@ void AFPSCharacter::EquipWeapon(int32 WeaponIndex)
         CurrentWeapon = nullptr;
     }
 
-    // 🔹 소켓이 있는지 확인 (없으면 오류 메시지 출력)
+    // 소켓이 있는지 확인 (없으면 오류 메시지 출력)
     if (!GetMesh()->DoesSocketExist(TEXT("WeaponSocket")))
     {
         UE_LOG(LogTemp, Error, TEXT("WeaponSocket이 존재하지 않습니다! 손에 무기를 부착할 수 없습니다."));
@@ -426,15 +426,15 @@ void AFPSCharacter::EquipWeapon(int32 WeaponIndex)
     SpawnParams.Owner = this;
     SpawnParams.Instigator = GetInstigator();
 
-    FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("WeaponSocket")); // 🔹 소켓 위치 사용
+    FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("WeaponSocket")); // 소켓 위치 사용
     FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("WeaponSocket"));
 
     // 새 무기 생성
-    CurrentWeapon = GetWorld()->SpawnActor<ASimWeapon>(WeaponClasses[WeaponIndex], SpawnLocation, SpawnRotation, SpawnParams);
+    CurrentWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponClasses[WeaponIndex], SpawnLocation, SpawnRotation, SpawnParams);
 
     if (CurrentWeapon)
     {
-        // 🔹 손의 "WeaponSocket"에 부착
+        // 손의 "WeaponSocket"에 부착
         CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
         UE_LOG(LogTemp, Warning, TEXT("무기 %d 장착됨!"), WeaponIndex);
     }
