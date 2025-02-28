@@ -106,10 +106,12 @@ void AFPSCharacter::BeginPlay()
     UE_LOG(LogTemp, Warning, TEXT("BeginPlay 실행됨!"));
     UE_LOG(LogTemp, Warning, TEXT("WeaponClasses 개수: %d"), WeaponClasses.Num());
 
-    // 처음 무기 장착 (0번 무기)
+    // WeaponList 배열 크기를 WeaponClasses 크기에 맞게 설정
+    WeaponList.SetNum(WeaponClasses.Num());
+
+    // 기본 무기 장착
     if (WeaponClasses.Num() > 0)
     {
-        UE_LOG(LogTemp, Warning, TEXT("wepon1!"));
         EquipWeapon(0);
     }
     else
@@ -117,6 +119,7 @@ void AFPSCharacter::BeginPlay()
         UE_LOG(LogTemp, Error, TEXT("WeaponClasses 배열이 비어 있음!"));
     }
 }
+
 
 
 float AFPSCharacter::GetHealth() const
@@ -207,7 +210,7 @@ void AFPSCharacter::Die()
     GetCharacterMovement()->DisableMovement();
     DisableInput(Cast<APlayerController>(GetController()));
 
-    AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(GetController());
+    APlayerController* PlayerController = Cast<APlayerController>(GetController());
     if (PlayerController)
     {
         PlayerController->SetIgnoreLookInput(true);
@@ -403,44 +406,66 @@ void AFPSCharacter::HandleStateChange(ECharacterState NewState)
 void AFPSCharacter::EquipWeapon(int32 WeaponIndex)
 {
     if (WeaponIndex < 0 || WeaponIndex >= WeaponClasses.Num())
-        return;
-
-    // 기존 무기 삭제
-    if (CurrentWeapon)
     {
-        CurrentWeapon->Destroy();
-        CurrentWeapon = nullptr;
+        UE_LOG(LogTemp, Error, TEXT("EquipWeapon: 잘못된 인덱스! WeaponIndex: %d, 배열 크기: %d"), WeaponIndex, WeaponClasses.Num());
+        return;
     }
 
     // 소켓이 있는지 확인 (없으면 오류 메시지 출력)
     if (!GetMesh()->DoesSocketExist(TEXT("WeaponSocket")))
     {
-        UE_LOG(LogTemp, Error, TEXT("WeaponSocket이 존재하지 않습니다! 손에 무기를 부착할 수 없습니다."));
+        UE_LOG(LogTemp, Error, TEXT("EquipWeapon: WeaponSocket이 존재하지 않음!"));
         return;
     }
 
-    // 무기 생성 위치와 회전 설정
-    FActorSpawnParameters SpawnParams;
-    SpawnParams.Owner = this;
-    SpawnParams.Instigator = GetInstigator();
-
-    FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("WeaponSocket")); // 소켓 위치 사용
-    FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("WeaponSocket"));
-
-    // 새 무기 생성
-    CurrentWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponClasses[WeaponIndex], SpawnLocation, SpawnRotation, SpawnParams);
-
+    // 현재 무기 숨기기
     if (CurrentWeapon)
     {
-        // 손의 "WeaponSocket"에 부착
-        CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
-        UE_LOG(LogTemp, Warning, TEXT("무기 %d 장착됨!"), WeaponIndex);
+        CurrentWeapon->SetActorHiddenInGame(true);
     }
-    else
+
+    // 무기 배열 크기 동기화 (최초 1회)
+    if (WeaponList.Num() != WeaponClasses.Num())
     {
-        UE_LOG(LogTemp, Error, TEXT("무기 스폰 실패!"));
+        WeaponList.SetNum(WeaponClasses.Num());
+    }
+
+    // 무기가 이미 존재하면 새로 생성하지 않고 사용
+    if (!WeaponList[WeaponIndex])
+    {
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = this;
+        SpawnParams.Instigator = GetInstigator();
+
+        FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("WeaponSocket"));
+        FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("WeaponSocket"));
+
+        // 새 무기 생성 및 저장
+        AWeapon* NewWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponClasses[WeaponIndex], SpawnLocation, SpawnRotation, SpawnParams);
+
+        if (!NewWeapon)
+        {
+            UE_LOG(LogTemp, Error, TEXT("EquipWeapon: 무기 스폰 실패! WeaponIndex: %d"), WeaponIndex);
+            return;
+        }
+
+        // 무기 부착 후 숨김 처리
+        NewWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
+        NewWeapon->SetActorHiddenInGame(true);
+
+        // 리스트에 저장
+        WeaponList[WeaponIndex] = NewWeapon;
+    }
+
+    // 선택한 무기를 활성화
+    CurrentWeapon = WeaponList[WeaponIndex];
+    if (CurrentWeapon)
+    {
+        CurrentWeapon->SetActorHiddenInGame(false);
+        UE_LOG(LogTemp, Warning, TEXT("EquipWeapon: 무기 %d 장착됨!"), WeaponIndex);
     }
 }
+
 
 
 void AFPSCharacter::Fire()

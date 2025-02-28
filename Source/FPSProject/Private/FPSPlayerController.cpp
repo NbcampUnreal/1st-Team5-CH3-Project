@@ -1,7 +1,14 @@
 #include "FPSPlayerController.h"
+#include "BasicGameInstance.h"
+#include "BasicGameState.h"
 #include "EnhancedInputSubsystems.h"   
 #include "EnhancedInputComponent.h"    
 #include "FPSCharacter.h"   
+#include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
+
+#include "Components/Border.h"
+#include "Components/TextBlock.h"
 
 AFPSPlayerController::AFPSPlayerController()
     : InputMappingContext(nullptr),
@@ -14,7 +21,11 @@ AFPSPlayerController::AFPSPlayerController()
     SelectWeapon1Action(nullptr),
     SelectWeapon2Action(nullptr),
     FireAction(nullptr),
-    ReloadAction(nullptr)
+    ReloadAction(nullptr),
+    HUDWidgetClass(nullptr),
+    HUDWidgetInstance(nullptr),
+    GameOverWidgetClass(nullptr),
+    GameOverWidgetInstance(nullptr)
 {
 }
 
@@ -38,3 +49,58 @@ void AFPSPlayerController::BeginPlay()
     }
 }
 
+void AFPSPlayerController::ShowGameOverScreen()
+{
+    if (HUDWidgetInstance)
+    {
+        HUDWidgetInstance->RemoveFromParent();
+        HUDWidgetInstance = nullptr;
+    }
+
+    if (GameOverWidgetInstance)
+    {
+        GameOverWidgetInstance->RemoveFromParent();
+        GameOverWidgetInstance = nullptr;
+    }
+
+    if (GameOverWidgetClass)
+    {
+        GameOverWidgetInstance = CreateWidget<UUserWidget>(this, GameOverWidgetClass);
+        if (GameOverWidgetInstance)
+        {
+            GameOverWidgetInstance->AddToViewport();
+
+            bShowMouseCursor = true;
+            SetInputMode(FInputModeUIOnly());
+        }
+
+        UFunction* PlayAnimFunc = GameOverWidgetInstance->FindFunction(FName("PlayGameOverAnim"));
+        if (PlayAnimFunc)
+        {
+            GameOverWidgetInstance->ProcessEvent(PlayAnimFunc, nullptr);
+
+            if (UTextBlock* PlayTimeText = Cast<UTextBlock>(GameOverWidgetInstance->GetWidgetFromName(TEXT("PlayTimeText"))))
+            {
+                //PlayTime
+            }
+            if (UTextBlock* KillCountText = Cast<UTextBlock>(GameOverWidgetInstance->GetWidgetFromName(TEXT("KillCountText"))))
+            {
+                //KillCount
+            }
+            if (UTextBlock* SleepCountText = Cast<UTextBlock>(GameOverWidgetInstance->GetWidgetFromName(TEXT("SleepCountText"))))
+            {
+                //SleepCount
+            }
+            if (UTextBlock* ScoreText = Cast<UTextBlock>(GameOverWidgetInstance->GetWidgetFromName(TEXT("ScoreText"))))
+            {
+                //Score
+                if (UBasicGameInstance* BasicGameInstance = Cast<UBasicGameInstance>(UGameplayStatics::GetGameInstance(this)))
+                {
+                    ScoreText->SetText(FText::FromString(
+                        FString::Printf(TEXT("Score : %d"), BasicGameInstance->TotalScore)
+                    ));
+                }
+            }
+        }
+    }
+}
