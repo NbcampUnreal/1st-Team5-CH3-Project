@@ -99,7 +99,8 @@ public:
 	void SelectWeapon2();
 	// **총 발사 요청**
 	void Fire();
-
+	// 재장전
+	void Reload();
 
 protected:
 
@@ -122,7 +123,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Mesh")
 	USkeletalMeshComponent* FirstPersonMesh;
-
 
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UAnimMontage* DeathMontage;

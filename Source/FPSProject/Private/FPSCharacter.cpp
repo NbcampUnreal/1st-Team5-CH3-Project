@@ -68,7 +68,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
             }
             if (PlayerController->Viewpoint_TransformationAction)
             {
-                UE_LOG(LogTemp, Warning, TEXT("Binding Viewpoint_Transformation Action!"));
+           
                 EnhancedInput->BindAction(PlayerController->Viewpoint_TransformationAction, ETriggerEvent::Triggered, this, &AFPSCharacter::Viewpoint_Transformation);
             }
             if (PlayerController->CrouchAction)
@@ -79,25 +79,22 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
             // 1, 2번 무기 변경 바인딩 - PlayerController가 아니라 FPSCharacter에서 직접 바인딩
             if (PlayerController->SelectWeapon1Action)
             {
-                UE_LOG(LogTemp, Warning, TEXT("wepon1!"));
                 EnhancedInput->BindAction(PlayerController->SelectWeapon1Action, ETriggerEvent::Started, this, &AFPSCharacter::SelectWeapon1);
             }
 
             if (PlayerController->SelectWeapon2Action)
             {
-                UE_LOG(LogTemp, Warning, TEXT("wepon2!"));
                 EnhancedInput->BindAction(PlayerController->SelectWeapon2Action, ETriggerEvent::Started, this, &AFPSCharacter::SelectWeapon2);
             }
             if (PlayerController->FireAction)
             {
-                UE_LOG(LogTemp, Warning, TEXT("FireAction 바인딩 완료!"));
                 EnhancedInput->BindAction(PlayerController->FireAction, ETriggerEvent::Started, this, &AFPSCharacter::Fire);
             }
-
-
+            if (PlayerController->ReloadAction)
+            {
+                EnhancedInput->BindAction(PlayerController->ReloadAction, ETriggerEvent::Started, this, &AFPSCharacter::Reload);
+            }
         }
-
-
     }
 }
 
@@ -210,7 +207,7 @@ void AFPSCharacter::Die()
     GetCharacterMovement()->DisableMovement();
     DisableInput(Cast<APlayerController>(GetController()));
 
-    APlayerController* PlayerController = Cast<APlayerController>(GetController());
+    AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(GetController());
     if (PlayerController)
     {
         PlayerController->SetIgnoreLookInput(true);
@@ -455,5 +452,17 @@ void AFPSCharacter::Fire()
     else
     {
         UE_LOG(LogTemp, Warning, TEXT("Fire() 호출됨, 하지만 무기가 없음!"));
+    }
+}
+void AFPSCharacter::Reload()
+{
+    if (CurrentWeapon)
+    {
+        CurrentWeapon->Reload();  // 무기 재장전 실행
+        UE_LOG(LogTemp, Warning, TEXT("Reload() 호출됨! 무기 재장전 완료."));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("장착된 무기가 없습니다!"));
     }
 }
