@@ -6,8 +6,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "TimerManager.h"
 #include "CharacterInterface.h"
-#include "Kismet/GameplayStatics.h"
-#include "BasicGameState.h"
 
 AFPSCharacter::AFPSCharacter()
 {
@@ -47,8 +45,6 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
     if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
     {
-        EnhancedInput->BindAction(FireAction, ETriggerEvent::Triggered, this, &AFPSCharacter::Fire);
-
         AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(GetController());
         if (PlayerController)
         {
@@ -112,16 +108,6 @@ void AFPSCharacter::BeginPlay()
 
     // WeaponList 배열 크기를 WeaponClasses 크기에 맞게 설정
     WeaponList.SetNum(WeaponClasses.Num());
-
-    APlayerController* PlayerController = Cast<APlayerController>(GetController());
-    if (PlayerController)
-    {
-        UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
-        if (InputSystem && InputMappingContext)
-        {
-            InputSystem->AddMappingContext(InputMappingContext, 0);
-        }
-        }
 
     // 기본 무기 장착
     if (WeaponClasses.Num() > 0)
@@ -224,7 +210,7 @@ void AFPSCharacter::Die()
     GetCharacterMovement()->DisableMovement();
     DisableInput(Cast<APlayerController>(GetController()));
 
-    AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(GetController());
+    APlayerController* PlayerController = Cast<APlayerController>(GetController());
     if (PlayerController)
     {
         PlayerController->SetIgnoreLookInput(true);
@@ -241,7 +227,6 @@ void AFPSCharacter::Die()
     if (DeathMontage)
     {
         float MontageDuration = PlayAnimMontage(DeathMontage);
-      
         GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &AFPSCharacter::DestroyCharacter, MontageDuration, false);
     }
     else
@@ -378,13 +363,6 @@ void AFPSCharacter::StopCrouch(const FInputActionValue& Value)
 
 void AFPSCharacter::DestroyCharacter()
 {
-    ABasicGameState* GameState = GetWorld() ? GetWorld()->GetGameState<ABasicGameState>() : nullptr;
-    if (GameState)
-    {
-        GameState->OnGameOver();
-    }
-
-
     Destroy();
 }
 
