@@ -6,7 +6,6 @@ class AEnemyAIController;
 #include "GameFramework/Character.h"
 #include "CharacterInterface.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/BoxComponent.h"
 #include "GameFramework/Controller.h"
 #include "FPSCharacter.h"
 #include "EnemyCharacter.generated.h"
@@ -56,19 +55,6 @@ public:
 
     // 플레이어 상태에 따라 감지 범위 업데이트
     void UpdateDetectionRangeForPlayerState(AFPSCharacter* Player);
-    
-    // 무기 충돌 감지 함수
-    UFUNCTION()
-    void OnWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
-                        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, 
-                        bool bFromSweep, const FHitResult& SweepResult);
-                        
-    // 무기 충돌 활성화/비활성화 함수
-    UFUNCTION(BlueprintCallable, Category = "AI|Combat")
-    void SetWeaponCollisionEnabled(bool bEnabled);
-    
-    // 디버그 시각화 함수
-    void DrawDebugWeaponCollision();
 
 protected:
     virtual void BeginPlay() override;
@@ -130,9 +116,6 @@ protected:
     bool bCanAttack = true;
     FTimerHandle AttackCooldownTimer;
     FTimerHandle AttackTimerHandle;
-    
-    // 디버그 시각화 타이머
-    FTimerHandle DebugTimerHandle;
 
     // 헤더에 상태별 감지 범위 수정자 추가
     UPROPERTY(EditAnywhere, Category = "AI|Detection")
@@ -146,17 +129,6 @@ protected:
 
     UPROPERTY(VisibleAnywhere, Category = "Weapon")
     USkeletalMeshComponent* WeaponMesh;
-    
-    // 무기 끝에 부착할 박스 컴포넌트
-    UPROPERTY(VisibleAnywhere, Category = "Weapon")
-    UBoxComponent* WeaponTipCollision;
-    
-    // 무기 데미지 값
-    UPROPERTY(EditAnywhere, Category = "AI|Combat")
-    float WeaponDamage = 10.0f;
-    
-    // 무기 충돌 활성화 상태
-    bool bWeaponCollisionEnabled = false;
 
 private:
     // 사망 상태
