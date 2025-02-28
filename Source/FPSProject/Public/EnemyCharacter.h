@@ -6,7 +6,6 @@ class AEnemyAIController;
 #include "GameFramework/Character.h"
 #include "CharacterInterface.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/BoxComponent.h"
 #include "GameFramework/Controller.h"
 #include "FPSCharacter.h"
 #include "EnemyCharacter.generated.h"
@@ -57,18 +56,8 @@ public:
     // 플레이어 상태에 따라 감지 범위 업데이트
     void UpdateDetectionRangeForPlayerState(AFPSCharacter* Player);
     
-    // 무기 충돌 감지 함수
-    UFUNCTION()
-    void OnWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
-                        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, 
-                        bool bFromSweep, const FHitResult& SweepResult);
-                        
-    // 무기 충돌 활성화/비활성화 함수
-    UFUNCTION(BlueprintCallable, Category = "AI|Combat")
-    void SetWeaponCollisionEnabled(bool bEnabled);
-    
-    // 디버그 시각화 함수
-    void DrawDebugWeaponCollision();
+    // 무기 애니메이션 재생 함수
+    void PlayWeaponAnimation(UAnimMontage* WeaponAnimation);
 
 protected:
     virtual void BeginPlay() override;
@@ -116,6 +105,13 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
     UAnimMontage* AttackMontage;
 
+    // 무기 애니메이션 몽타주들
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation|Weapon")
+    UAnimMontage* WeaponAttackMontage;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation|Weapon")
+    UAnimMontage* WeaponWalkMontage;
+
     // 공격 관련 변수들
     UPROPERTY(EditAnywhere, Category = "AI|Combat")
     float AttackCooldown = 2.0f;    // 기본 공격 쿨타임
@@ -130,9 +126,6 @@ protected:
     bool bCanAttack = true;
     FTimerHandle AttackCooldownTimer;
     FTimerHandle AttackTimerHandle;
-    
-    // 디버그 시각화 타이머
-    FTimerHandle DebugTimerHandle;
 
     // 헤더에 상태별 감지 범위 수정자 추가
     UPROPERTY(EditAnywhere, Category = "AI|Detection")
@@ -144,19 +137,13 @@ protected:
     UPROPERTY(EditAnywhere, Category = "AI|Detection")
     float CrouchingRangeMultiplier = 0.5f;
 
-    UPROPERTY(VisibleAnywhere, Category = "Weapon")
+    // 무기 메시 컴포넌트
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
     USkeletalMeshComponent* WeaponMesh;
     
-    // 무기 끝에 부착할 박스 컴포넌트
-    UPROPERTY(VisibleAnywhere, Category = "Weapon")
-    UBoxComponent* WeaponTipCollision;
-    
-    // 무기 데미지 값
-    UPROPERTY(EditAnywhere, Category = "AI|Combat")
-    float WeaponDamage = 10.0f;
-    
-    // 무기 충돌 활성화 상태
-    bool bWeaponCollisionEnabled = false;
+    // 무기 데미지
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+    float WeaponDamage = 20.0f;
 
 private:
     // 사망 상태
