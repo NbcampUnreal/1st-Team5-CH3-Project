@@ -8,6 +8,7 @@ class AEnemyAIController;
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Controller.h"
 #include "FPSCharacter.h"
+#include "Components/WidgetComponent.h"
 #include "EnemyCharacter.generated.h"
 
 UCLASS()
@@ -67,9 +68,22 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Combat")
     void OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, 
                         FVector NormalImpulse, const FHitResult& Hit);
+                        
+    // 플레이어 감지 상태 설정
+    UFUNCTION(BlueprintCallable, Category = "AI|Detection")
+    void SetPlayerDetected(bool bDetected);
+    
+    // 플레이어 감지 상태 반환
+    UFUNCTION(BlueprintCallable, Category = "AI|Detection")
+    bool IsPlayerDetected() const { return bPlayerDetected; }
+    
+    // 수면 타이머 업데이트
+    UFUNCTION(BlueprintCallable, Category = "AI|State")
+    void UpdateSleepTimer(float RemainingTime);
 
 protected:
     virtual void BeginPlay() override;
+    virtual void Tick(float DeltaTime) override;
 
     // 현재 체력
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Stats")
@@ -160,6 +174,26 @@ protected:
     // 무기 데미지
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
     float WeaponDamage = 20.0f;
+
+    // 감지 범위 UI 위젯 컴포넌트
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+    UWidgetComponent* DetectionRangeWidgetComp;
+    
+    // 수면 상태 UI 위젯 컴포넌트
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+    UWidgetComponent* SleepStateWidgetComp;
+    
+    // 플레이어 감지 상태
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI|Detection")
+    bool bPlayerDetected;
+    
+    // 수면 상태 지속 시간
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI|State")
+    float SleepDuration;
+    
+    // 수면 상태 남은 시간
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI|State")
+    float SleepRemainingTime;
 
 private:
     // 사망 상태

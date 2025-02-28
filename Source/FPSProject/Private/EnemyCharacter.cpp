@@ -18,6 +18,9 @@ AEnemyCharacter::AEnemyCharacter()
     AttackRange = 300.0f;     // 공격 범위
     DetectionRange = 600.0f;  // 감지 범위
     bIsDead = false;
+    bPlayerDetected = false;
+    SleepDuration = 0.0f;
+    SleepRemainingTime = 0.0f;
 
     // AI 이동 설정
     GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -36,6 +39,26 @@ AEnemyCharacter::AEnemyCharacter()
     WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
     WeaponMesh->SetSimulatePhysics(false); // 기본적으로는 비활성화
     WeaponMesh->SetEnableGravity(true);    // 중력 활성화
+    
+    // 감지 범위 UI 위젯 컴포넌트 생성
+    DetectionRangeWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("DetectionRangeWidget"));
+    DetectionRangeWidgetComp->SetupAttachment(RootComponent);
+    DetectionRangeWidgetComp->SetWidgetSpace(EWidgetSpace::World);
+    DetectionRangeWidgetComp->SetDrawSize(FVector2D(300.0f, 300.0f)); // 크기 조정
+    DetectionRangeWidgetComp->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f)); // 캐릭터 발 아래에 위치
+    DetectionRangeWidgetComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    
+    // 수면 상태 UI 위젯 컴포넌트 생성
+    SleepStateWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("SleepStateWidget"));
+    SleepStateWidgetComp->SetupAttachment(RootComponent);
+    SleepStateWidgetComp->SetWidgetSpace(EWidgetSpace::World);
+    SleepStateWidgetComp->SetDrawSize(FVector2D(100.0f, 100.0f));
+    SleepStateWidgetComp->SetRelativeLocation(FVector(0.0f, 0.0f, 120.0f)); // 캐릭터 머리 위에 위치
+    SleepStateWidgetComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    SleepStateWidgetComp->SetVisibility(false); // 기본적으로 비활성화
+    
+    // Tick 활성화
+    PrimaryActorTick.bCanEverTick = true;
 }
 
 void AEnemyCharacter::BeginPlay()
@@ -86,6 +109,35 @@ void AEnemyCharacter::BeginPlay()
     {
         PlayWeaponAnimation(WeaponWalkMontage);
     }
+}
+
+// Tick 함수 구현
+void AEnemyCharacter::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    
+    // 수면 상태일 때 타이머 업데이트
+    if (bIsSleeping && SleepDuration > 0.0f)
+    {
+        SleepRemainingTime = FMath::Max(0.0f, SleepRemainingTime - DeltaTime);
+        UpdateSleepTimer(SleepRemainingTime);
+    }
+}
+
+// 플레이어 감지 상태 설정
+void AEnemyCharacter::SetPlayerDetected(bool bDetected)
+{
+    bPlayerDetected = bDetected;
+    
+    // 블루프린트에서 UI 업데이트를 위한 로그
+    UE_LOG(LogTemp, Warning, TEXT("플레이어 감지 상태 변경: %s"), bPlayerDetected ? TEXT("감지됨") : TEXT("감지되지 않음"));
+}
+
+// 수면 타이머 업데이트
+void AEnemyCharacter::UpdateSleepTimer(float RemainingTime)
+{
+    // 블루프린트에서 UI 업데이트를 위한 로그
+    UE_LOG(LogTemp, Warning, TEXT("수면 타이머 업데이트: %.1f초 남음"), RemainingTime);
 }
 
 float AEnemyCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, 
@@ -457,6 +509,15 @@ void AEnemyCharacter::Sleep(float Duration)
     if (bIsDead || bIsSleeping) return;
 
     bIsSleeping = true;
+    SleepDuration = Duration;
+    SleepRemainingTime = Duration;
+    
+    // 수면 UI 활성화
+    if (SleepStateWidgetComp)
+    {
+        SleepStateWidgetComp->SetVisibility(true);
+        UE_LOG(LogTemp, Warning, TEXT("수면 UI 활성화, 지속 시간: %.1f초"), Duration);
+    }
     
     // AI 이동 중지
     GetCharacterMovement()->StopMovementImmediately();
@@ -490,6 +551,14 @@ void AEnemyCharacter::WakeUp()
     if (bIsDead) return;
 
     bIsSleeping = false;
+    SleepRemainingTime = 0.0f;
+    
+    // 수면 UI 비활성화
+    if (SleepStateWidgetComp)
+    {
+        SleepStateWidgetComp->SetVisibility(false);
+        UE_LOG(LogTemp, Warning, TEXT("수면 UI 비활성화"));
+    }
     
     // AI 컨트롤러 다시 활성화
     if (AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController()))
