@@ -208,6 +208,10 @@ void AFPSCharacter::TakeDamage(float DamageAmount)
 
     UE_LOG(LogTemp, Warning, TEXT("Character took damage: %f, Current Health: %f"), DamageAmount, Health);
 
+    if (HurtSound)
+    {
+        UGameplayStatics::PlaySoundAtLocation(this, HurtSound, GetActorLocation());
+    }
     if (Health <= 0)
     {
         Die();
