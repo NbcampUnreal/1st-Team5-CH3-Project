@@ -67,18 +67,6 @@ void AEnemyCharacter::BeginPlay()
     CurrentHealth = MaxHealth;
     UpdateMovementSpeed();  // 초기 속도 설정
     
-    // 캡슐 컴포넌트에 충돌 이벤트 바인딩
-    GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AEnemyCharacter::OnComponentHit);
-    
-    // 메시 컴포넌트에도 충돌 이벤트 바인딩
-    GetMesh()->OnComponentHit.AddDynamic(this, &AEnemyCharacter::OnComponentHit);
-    
-    // 무기 메시에도 충돌 이벤트 바인딩
-    if (WeaponMesh)
-    {
-        WeaponMesh->OnComponentHit.AddDynamic(this, &AEnemyCharacter::OnComponentHit);
-    }
-
     // 무기 애니메이션 인스턴스 확인
     if (WeaponMesh)
     {
@@ -128,9 +116,6 @@ void AEnemyCharacter::Tick(float DeltaTime)
 void AEnemyCharacter::SetPlayerDetected(bool bDetected)
 {
     bPlayerDetected = bDetected;
-    
-    // 블루프린트에서 UI 업데이트를 위한 로그
-    UE_LOG(LogTemp, Warning, TEXT("플레이어 감지 상태 변경: %s"), bPlayerDetected ? TEXT("감지됨") : TEXT("감지되지 않음"));
 }
 
 // 수면 타이머 업데이트
@@ -143,9 +128,23 @@ void AEnemyCharacter::UpdateSleepTimer(float RemainingTime)
 float AEnemyCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, 
                                 class AController* EventInstigator, AActor* DamageCauser)
 {
+    // 사망 상태 확인
+    if (bIsDead) return 0.0f;
+    
+    // 기본 TakeDamage 호출
     float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
     
-    // 인터페이스 구현 호출
+    // 데미지 원인 로깅
+    if (DamageCauser)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("데미지 원인: %s, 데미지 양: %f"), *DamageCauser->GetName(), ActualDamage);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("알 수 없는 원인의 데미지: %f"), ActualDamage);
+    }
+    
+    // 인터페이스 구현 호출 (실제 데미지 처리)
     TakeDamage(ActualDamage);
     
     return ActualDamage;
@@ -615,44 +614,5 @@ void AEnemyCharacter::PlayWeaponAnimation(UAnimMontage* WeaponAnimation)
     else
     {
         UE_LOG(LogTemp, Error, TEXT("Weapon Animation or WeaponMesh is null!"));
-    }
-}
-
-// 총알 충돌 감지 함수 구현
-void AEnemyCharacter::OnBulletHit(float Damage, AActor* BulletOwner)
-{
-    if (bIsDead) return;
-    
-    UE_LOG(LogTemp, Warning, TEXT("AI가 총알에 맞았습니다! 데미지: %f"), Damage);
-    
-    // 데미지 적용
-    TakeDamage(Damage);
-    
-    // 피격 방향 계산)
-    if (BulletOwner)
-    {
-        FVector HitDirection = GetActorLocation() - BulletOwner->GetActorLocation();
-        HitDirection.Normalize();
-        
-        // 약간의 넉백 효과
-        GetCharacterMovement()->AddImpulse(HitDirection * 500.0f, true);
-    }
-}
-
-// 컴포넌트 충돌 이벤트 구현
-void AEnemyCharacter::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
-                                    UPrimitiveComponent* OtherComp, FVector NormalImpulse, 
-                                    const FHitResult& Hit)
-{
-    // 충돌한 액터가 총알인지 확인
-    if (OtherActor && OtherActor->ActorHasTag("Bullet"))
-    {
-        UE_LOG(LogTemp, Warning, TEXT("AI가 총알 컴포넌트와 충돌했습니다: %s"), *OtherActor->GetName());
-        
-        // 데미지 적용
-        OnBulletHit(10.0f, OtherActor->GetOwner());
-        
-        // 총알 제거
-        OtherActor->Destroy();
     }
 }
