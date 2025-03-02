@@ -52,11 +52,6 @@ void AEnemyAIController::Tick(float DeltaTime)
     
     // 매 Tick마다 플레이어 감지 상태 업데이트
     UpdatePlayerDetection();
-    
-    // 디버그 시각화
-    #if WITH_EDITOR
-    DrawDebugDetectionRange();
-    #endif
 }
 
 void AEnemyAIController::UpdatePlayerDetection()
@@ -183,26 +178,4 @@ bool AEnemyAIController::IsInAttackRange()
     }
     
     return false;
-}
-
-void AEnemyAIController::DrawDebugDetectionRange()
-{
-    AEnemyCharacter* EnemyChar = Cast<AEnemyCharacter>(GetPawn());
-    if (!EnemyChar) return;
-    
-    // 플레이어 감지 상태에 따라 색상 변경
-    FColor RangeColor = EnemyChar->IsPlayerDetected() ? FColor::Red : FColor::White;
-    
-    // 감지 범위 시각화
-    DrawDebugSphere(
-        GetWorld(),
-        EnemyChar->GetActorLocation(),
-        EnemyChar->GetDetectionRange(),
-        32,  // 세그먼트 수
-        RangeColor,
-        false,  // 지속적
-        -1.0f,  // 수명
-        0,
-        1.0f  // 두께
-    );
 }

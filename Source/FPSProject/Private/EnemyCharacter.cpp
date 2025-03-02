@@ -44,7 +44,7 @@ AEnemyCharacter::AEnemyCharacter()
     DetectionRangeWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("DetectionRangeWidget"));
     DetectionRangeWidgetComp->SetupAttachment(RootComponent);
     DetectionRangeWidgetComp->SetWidgetSpace(EWidgetSpace::World);
-    DetectionRangeWidgetComp->SetDrawSize(FVector2D(300.0f, 300.0f)); // 크기 조정
+    DetectionRangeWidgetComp->SetDrawSize(FVector2D(DetectionRange * 2.0f, DetectionRange * 2.0f));
     DetectionRangeWidgetComp->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f)); // 캐릭터 발 아래에 위치
     DetectionRangeWidgetComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     
@@ -97,6 +97,16 @@ void AEnemyCharacter::BeginPlay()
     {
         PlayWeaponAnimation(WeaponWalkMontage);
     }
+
+    // 위젯과 함수 포인터 캐싱
+    if (DetectionRangeWidgetComp)
+    {
+        CachedDetectionWidget = Cast<UUserWidget>(DetectionRangeWidgetComp->GetWidget());
+        if (CachedDetectionWidget)
+        {
+            CachedUpdateFunc = CachedDetectionWidget->FindFunction(FName("UpdateDetectionState"));
+        }
+    }
 }
 
 // Tick 함수 구현
@@ -115,7 +125,24 @@ void AEnemyCharacter::Tick(float DeltaTime)
 // 플레이어 감지 상태 설정
 void AEnemyCharacter::SetPlayerDetected(bool bDetected)
 {
-    bPlayerDetected = bDetected;
+    if (bPlayerDetected != bDetected)
+    {
+        bPlayerDetected = bDetected;
+        
+        if (CachedDetectionWidget && CachedUpdateFunc)
+        {
+            struct
+            {
+                bool bIsDetected;
+            } Params;
+            
+            Params.bIsDetected = bDetected;
+            CachedDetectionWidget->ProcessEvent(CachedUpdateFunc, &Params);
+        }
+                        
+        // 블루프린트에서 UI 업데이트를 위한 로그
+        UE_LOG(LogTemp, Warning, TEXT("플레이어 감지 상태 변경: %s"), bPlayerDetected ? TEXT("감지됨") : TEXT("감지되지 않음"));
+    }
 }
 
 // 수면 타이머 업데이트
@@ -573,6 +600,7 @@ void AEnemyCharacter::UpdateDetectionRangeForPlayerState(AFPSCharacter* Player)
     if (!Player) return;
 
     ECharacterState CurrentPlayerState = Player->GetCurrentState();
+    float OldDetectionRange = DetectionRange;
     
     switch (CurrentPlayerState)
     {
@@ -591,6 +619,12 @@ void AEnemyCharacter::UpdateDetectionRangeForPlayerState(AFPSCharacter* Player)
         default:  // Normal 상태
             DetectionRange = 600.0f;  // 걷기: 기본 감지 범위
             break;
+    }
+    
+    // 감지 범위가 변경되었으면 UI 위젯 크기도 업데이트
+    if (OldDetectionRange != DetectionRange && DetectionRangeWidgetComp)
+    {
+        DetectionRangeWidgetComp->SetDrawSize(FVector2D(DetectionRange * 2.0f, DetectionRange * 2.0f));
     }
 }
 

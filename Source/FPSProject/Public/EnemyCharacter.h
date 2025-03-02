@@ -192,4 +192,8 @@ private:
 
     // 마취 해제 함수
     void WakeUp();
+
+    // 감지 범위 UI 위젯 캐싱
+    UUserWidget* CachedDetectionWidget;
+    UFunction* CachedUpdateFunc;
 };
