@@ -38,7 +38,7 @@ void ABasicGameState::OnGameOver()
     {
         PlayerController->SetPause(true);
         
-        //PlayerController->ShowMainMenu(true);
+        PlayerController->ShowGameOverScreen();
     }
 }
 
