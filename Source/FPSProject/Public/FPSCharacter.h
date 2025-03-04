@@ -32,6 +32,8 @@ private:
 	bool bIsFirstPerson = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Stats", meta = (AllowPrivateAccess = "true"))
+	float MaxHealth;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Stats", meta = (AllowPrivateAccess = "true"))
 	float Health;
 
 	bool bIsAlive = true;
@@ -50,10 +52,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void StopCrouch(const FInputActionValue& Value);
 
-
-
+	// getter
+	UFUNCTION(BlueprintCallable, Category = "Character Stats")
+	float GetMaxHealth() const;
 	UFUNCTION(BlueprintCallable, Category = "Character Stats")
 	float GetHealth() const;
+	//setter
+	UFUNCTION(BlueprintCallable, Category = "Character Stats")
+	void SetMaxHealth(float amount);
+	UFUNCTION(BlueprintCallable, Category = "Character Stats")
+	void SetHealth(float amount);
 
 	UFUNCTION(BlueprintCallable, Category = "Character Stats")
 	virtual void TakeDamage(float DamageAmount) override;

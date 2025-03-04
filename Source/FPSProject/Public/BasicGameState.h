@@ -41,6 +41,9 @@ public:
 	// GamePhase
 	UPROPERTY(BlueprintReadOnly, Category = "Game Phase")
 	EGamePhase CurrentPhase = EGamePhase::Tutorial;
+	UPROPERTY(BlueprintReadOnly, Category = "Game Phase|Mission")
+	FString CurrentMissionText;
+
 
 
 	UFUNCTION(BlueprintPure, Category = " Score")
@@ -51,9 +54,18 @@ public:
 	void OnGameOver();
 	UFUNCTION(BlueprintCallable, Category = " Phase")
 	void SetGamePhase(EGamePhase NewPhase);
+
 	void UpdateHUD();
+	void UpdateHealthHUD();
+	void UpdateAmmoHUD();
+	void UpdateMissionHUD();
+	void UpdateWeaponHUD();
+
+
 	UFUNCTION(BlueprintCallable, Category = "Timer")
 	FString GetFormattedPlayTime();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	FString GetAmmoCount();
 	
 	void StartStealthPhase();
 	void StartCombatPhase();

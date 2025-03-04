@@ -85,7 +85,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "HUD")
 	UUserWidget* GetHUDWidget() const;
 
-
+	UFUNCTION(BlueprintCallable, Category = "HUD")
+	void ShowGameHUD();
 
 	UFUNCTION(BlueprintCallable, Category = "MainMenu")
 	void ShowMainMenu();

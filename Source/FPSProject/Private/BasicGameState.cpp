@@ -1,10 +1,14 @@
 #include "BasicGameState.h"
 #include "BasicGameInstance.h"
 #include "FPSPlayerController.h"
+#include "FPSCharacter.h"
+#include "Weapon.h"
 #include "Kismet/GameplayStatics.h"
 #include "CoinItem.h"
-#include "Components/TextBlock.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/TextBlock.h"
+#include "Components/ProgressBar.h"
+#include "Components/Image.h"
 
 ABasicGameState::ABasicGameState()
 {
@@ -14,12 +18,16 @@ ABasicGameState::ABasicGameState()
     bIsPause = false;
 
     PrimaryActorTick.bCanEverTick = true;
+    CurrentMissionText = TEXT("잠은 죽어서 자자");
 }
 
 void ABasicGameState::BeginPlay()
 {
     Super::BeginPlay();
     UE_LOG(LogTemp, Warning, TEXT("SpartaGameState::BeginPlay() 실행됨! 현재 맵: %s"), *GetWorld()->GetMapName());
+    
+    GetFPSPlayerController()->ShowGameHUD();
+    UpdateHUD();
 }
 
 void ABasicGameState::Tick(float DeltaTime)
@@ -91,7 +99,138 @@ void ABasicGameState::UpdateHUD()
     {
         if (UUserWidget* HUDWidget = FPSPlayerController->GetHUDWidget())
         {
+            AFPSCharacter* FPSCharacter = Cast<AFPSCharacter>(FPSPlayerController->GetPawn());
 
+            //HP Bar
+            if (UProgressBar* HPBar = Cast<UProgressBar>(HUDWidget->GetWidgetFromName(TEXT("HPBar"))))
+            {
+                float CurrentHP = FPSCharacter->GetHealth();
+                float MaxHP = FPSCharacter->GetMaxHealth();
+                float HPPercent = CurrentHP / MaxHP;
+                HPBar->SetPercent(HPPercent);
+            }
+
+
+
+            //Mission Text
+            if (UTextBlock* MissionText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("MissionText"))))
+            {
+                MissionText->SetText(FText::FromString(CurrentMissionText));
+            }
+        }
+    }
+}
+
+void ABasicGameState::UpdateHealthHUD()
+{
+    
+    if (AFPSPlayerController* FPSPlayerController = Cast<AFPSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+    {
+        if (UUserWidget* HUDWidget = FPSPlayerController->GetHUDWidget())
+        {
+            AFPSCharacter* FPSCharacter = Cast<AFPSCharacter>(FPSPlayerController->GetPawn());
+            if (FPSCharacter)
+            {
+                if (UProgressBar* HPBar = Cast<UProgressBar>(HUDWidget->GetWidgetFromName(TEXT("HPBar"))))
+                {
+                    float CurrentHP = FPSCharacter->GetHealth();
+                    float MaxHP = FPSCharacter->GetMaxHealth();
+                    float HPPercent = CurrentHP / MaxHP;
+                    HPBar->SetPercent(HPPercent);
+                }
+            }
+        }
+    }
+}
+
+void ABasicGameState::UpdateAmmoHUD()
+{
+    if (AFPSPlayerController* FPSPlayerController = Cast<AFPSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+    {
+        if (UUserWidget* HUDWidget = FPSPlayerController->GetHUDWidget())
+        {
+            AFPSCharacter* FPSCharacter = Cast<AFPSCharacter>(FPSPlayerController->GetPawn());
+            if (FPSCharacter)
+            {
+                // CurrentAmmo Text
+                if (UTextBlock* CurrentAmmoText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("CurrentAmmoText"))))
+                {
+                    int32 CurrentAmmo = FPSCharacter->CurrentWeapon->GetCurrentAmmo();
+                    CurrentAmmoText->SetText(FText::FromString(
+                        FString::Printf(TEXT("%d"), CurrentAmmo)
+                    ));
+                }
+                // TotalAmmo Text
+                if (UTextBlock* TotalAmmoText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("TotalAmmoText"))))
+                {
+                    int32 TotalAmmo = FPSCharacter->CurrentWeapon->GetMaxAmmo();
+                    TotalAmmoText->SetText(FText::FromString(
+                        FString::Printf(TEXT("%d"), TotalAmmo)
+                    ));
+                }
+            }
+        }
+    }
+}
+
+void ABasicGameState::UpdateMissionHUD()
+{
+    if (AFPSPlayerController* FPSPlayerController = Cast<AFPSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+    {
+        if (UUserWidget* HUDWidget = FPSPlayerController->GetHUDWidget())
+        {
+            AFPSCharacter* FPSCharacter = Cast<AFPSCharacter>(FPSPlayerController->GetPawn());
+            if (FPSCharacter)
+            {
+                //Mission Text
+                if (UTextBlock* MissionText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("MissionText"))))
+                {
+                    MissionText->SetText(FText::FromString(CurrentMissionText));
+                }
+            }
+        }
+    }
+}
+
+void ABasicGameState::UpdateWeaponHUD()
+{
+    if (AFPSPlayerController* FPSPlayerController = Cast<AFPSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+    {
+        if (UUserWidget* HUDWidget = FPSPlayerController->GetHUDWidget())
+        {
+            AFPSCharacter* FPSCharacter = Cast<AFPSCharacter>(FPSPlayerController->GetPawn());
+            if (FPSCharacter)
+            {
+                // Weapon Image, WeaponText
+                if (UImage* WeaponImage = Cast<UImage>(HUDWidget->GetWidgetFromName(TEXT("WeaponImage"))))
+                {
+                    FString AssetPath;
+
+                    if (UTextBlock* WeaponText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("WeaponText"))))
+                    {
+                        switch (FPSCharacter->CurrentWeapon->GetWeaponType())
+                        {
+                        case EWeaponType::NormalGun:
+                            AssetPath = "/Game/Image/GunImage.png";
+                            WeaponText->SetText(FText::FromString(
+                                FString::Printf(TEXT("소총"))
+                            ));
+                            break;
+                        case EWeaponType::StunGun:
+                            AssetPath = "/Game/Image/GunImage.png";
+                            WeaponText->SetText(FText::FromString(
+                                FString::Printf(TEXT("마취총"))
+                            ));
+                            break;
+                        }
+                        UTexture2D* LoadedTexture = LoadObject<UTexture2D>(nullptr, *AssetPath);
+                        if (LoadedTexture)
+                        {
+                            WeaponImage->SetBrushFromTexture(LoadedTexture);
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -104,6 +243,19 @@ FString ABasicGameState::GetFormattedPlayTime()
     int32 Seconds = TotalSeconds % 60;
 
     return FString::Printf(TEXT("플레이 시간 : %02d:%02d:%02d"), Hours, Minutes, Seconds);
+}
+
+FString ABasicGameState::GetAmmoCount()
+{
+    if (AFPSPlayerController* FPSPlayerController = GetFPSPlayerController())
+    {
+        AFPSCharacter* FPSCharacter = Cast<AFPSCharacter>(FPSPlayerController->GetPawn());
+        if (FPSCharacter)
+        {
+            //return FString::Printf(TEXT("%d / %d"), FPSCharacter->CurrentAmmo, FPSCharacter->MaxAmmo);
+        }
+    }
+    return FString(TEXT("0 / 0"));
 }
 
 void ABasicGameState::StartStealthPhase()

@@ -71,6 +71,40 @@ UUserWidget* AFPSPlayerController::GetHUDWidget() const
     return HUDWidgetInstance;
 }
 
+void AFPSPlayerController::ShowGameHUD()
+{
+    UE_LOG(LogTemp, Warning, TEXT("ShowGameHUD()!!"));
+    if (HUDWidgetInstance)
+    {
+        HUDWidgetInstance->RemoveFromParent();
+        HUDWidgetInstance = nullptr;
+    }
+
+    if (MainMenuWidgetInstance)
+    {
+        MainMenuWidgetInstance->RemoveFromParent();
+        MainMenuWidgetInstance = nullptr;
+    }
+
+    if (HUDWidgetClass)
+    {
+        HUDWidgetInstance = CreateWidget<UUserWidget>(this, HUDWidgetClass);
+        if (HUDWidgetInstance)
+        {
+            HUDWidgetInstance->AddToViewport();
+
+            bShowMouseCursor = false;
+            SetInputMode(FInputModeGameOnly());
+        }
+        UE_LOG(LogTemp, Warning, TEXT("Create WidgetInstance"));
+        ABasicGameState* BasicGameState = GetWorld() ? GetWorld()->GetGameState<ABasicGameState>() : nullptr;
+        if (BasicGameState) {
+            BasicGameState->UpdateHUD();
+            UE_LOG(LogTemp, Warning, TEXT("UpdateHUD "));
+        }
+    }
+}
+
 void AFPSPlayerController::ShowMainMenu()
 {
     if (HUDWidgetInstance)
@@ -179,6 +213,7 @@ void AFPSPlayerController::StartGame()
     UGameplayStatics::OpenLevel(GetWorld(), TEXT("Demo"));
     SetPause(false);
     SetInputMode(FInputModeGameOnly());
+
 }
 
 

@@ -16,6 +16,7 @@ void AWeapon::BeginPlay()
 	Super::BeginPlay();
 }
 
+
 void AWeapon::Fire()
 {
 	if (CurrentAmmo > 0)
