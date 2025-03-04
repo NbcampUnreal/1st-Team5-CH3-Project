@@ -1,0 +1,14 @@
+/.git
+/.idea
+/.vs
+/.vscode
+/Content
+/DerivedDataCache
+/Intermediate
+/Saved
+/Plugins/UEGitPlugin-3.16/Intermediate
+/Plugins/UEGitPlugin-3.16/Screenshots
+/Plugins/VisualStudioTools/azure-pipelines
+/Plugins/VisualStudioTools/Docs
+/Plugins/VisualStudioTools/Intermediate
+/Plugins/VisualStudioTools/Scripts
