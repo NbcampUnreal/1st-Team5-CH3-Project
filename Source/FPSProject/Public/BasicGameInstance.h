@@ -13,6 +13,7 @@ public:
     int32 TotalScore = 0;
     int32 TotalSleepCount = 0; 
     int32 TotalKillCount = 0;  
+    float TotalPlayTime = 0.f;
     UPROPERTY(BlueprintReadOnly, Category = "Objective")
     bool bDocumentBurned = false; 
 

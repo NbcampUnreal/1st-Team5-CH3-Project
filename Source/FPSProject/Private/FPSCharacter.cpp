@@ -34,7 +34,8 @@ AFPSCharacter::AFPSCharacter()
     SprintSpeedMultiplier = 2.0f;
     SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
 
-    Health = 100.0f;
+    MaxHealth = 100.0f;
+    Health = MaxHealth;
 
     GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 
@@ -136,9 +137,24 @@ void AFPSCharacter::BeginPlay()
 
 
 
+float AFPSCharacter::GetMaxHealth() const
+{
+    return MaxHealth;
+}
+
 float AFPSCharacter::GetHealth() const
 {
     return Health;
+}
+
+void AFPSCharacter::SetMaxHealth(float Amount)
+{
+    MaxHealth = Amount;
+}
+
+void AFPSCharacter::SetHealth(float Amount)
+{
+    Health = Amount;
 }
 
 void AFPSCharacter::Move(const FInputActionValue& value)
@@ -208,10 +224,19 @@ void AFPSCharacter::TakeDamage(float DamageAmount)
 
     UE_LOG(LogTemp, Warning, TEXT("Character took damage: %f, Current Health: %f"), DamageAmount, Health);
 
+
+    ABasicGameState* BasicGameState = Cast<ABasicGameState>(UGameplayStatics::GetGameState(this));
+    if (BasicGameState)
+    {
+        BasicGameState->UpdateHealthHUD();
+    }
+
+
     if (HurtSound)
     {
         UGameplayStatics::PlaySoundAtLocation(this, HurtSound, GetActorLocation());
     }
+
     if (Health <= 0)
     {
         Die();
@@ -340,6 +365,7 @@ void AFPSCharacter::SelectWeapon1()
 {
     UE_LOG(LogTemp, Warning, TEXT("무기 1 선택됨!"));
     EquipWeapon(0);
+
 }
 
 void AFPSCharacter::SelectWeapon2()
@@ -401,6 +427,7 @@ void AFPSCharacter::SetCharacterState(ECharacterState NewState)
         OnStateChanged(NewState);
     }
 }
+
 
 void AFPSCharacter::HandleStateChange(ECharacterState NewState)
 {
@@ -489,6 +516,12 @@ void AFPSCharacter::EquipWeapon(int32 WeaponIndex)
         CurrentWeapon->SetActorHiddenInGame(false);
         UE_LOG(LogTemp, Warning, TEXT("EquipWeapon: 무기 %d 장착됨!"), WeaponIndex);
     }
+    ABasicGameState* BasicGameState = Cast<ABasicGameState>(UGameplayStatics::GetGameState(this));
+    if (BasicGameState)
+    {
+        BasicGameState->UpdateAmmoHUD();
+        BasicGameState->UpdateWeaponHUD();
+    }
 }
 
 
@@ -499,6 +532,11 @@ void AFPSCharacter::Fire()
     {
         UE_LOG(LogTemp, Warning, TEXT("Fire() 호출됨, 무기 발사!"));
         CurrentWeapon->Fire();
+        ABasicGameState* BasicGameState = Cast<ABasicGameState>(UGameplayStatics::GetGameState(this));
+        if (BasicGameState)
+        {
+            BasicGameState->UpdateAmmoHUD();
+        }
     }
     else
     {

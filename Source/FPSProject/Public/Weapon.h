@@ -36,6 +36,23 @@ protected:
 	int32 CurrentAmmo;  // 현재 탄약
 
 public:
+	//getter
+	UFUNCTION(BlueprintCallable)
+	int32 GetMaxAmmo() { return MaxAmmo; } const
+	UFUNCTION(BlueprintCallable)
+	int32 GetCurrentAmmo() { return CurrentAmmo; } const
+	UFUNCTION(BlueprintCallable)
+	EWeaponType GetWeaponType() { return WeaponType; } const
+	//setter
+	UFUNCTION(BlueprintCallable)
+	void SetMaxAmmo(int32 Amount) { MaxAmmo = Amount; }
+	UFUNCTION(BlueprintCallable)
+	void SetCurrentAmmo(int32 Amount) { CurrentAmmo = Amount; }
+	UFUNCTION(BlueprintCallable)
+	void SetWeaponType(EWeaponType Amount) { WeaponType = Amount; }
+
+
+
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void Fire();  // 무기 발사 (오버라이드 가능)
 
