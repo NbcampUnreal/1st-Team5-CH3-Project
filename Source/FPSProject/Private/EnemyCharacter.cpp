@@ -716,3 +716,26 @@ void AEnemyCharacter::PlayWeaponAnimation(UAnimMontage *WeaponAnimation)
         UE_LOG(LogTemp, Error, TEXT("Weapon Animation or WeaponMesh is null!"));
     }
 }
+
+// PlayRate 매개변수를 포함한 무기 애니메이션 재생 함수 오버로드
+void AEnemyCharacter::PlayWeaponAnimation(UAnimMontage *WeaponAnimation, float PlayRate)
+{
+    if (WeaponAnimation && WeaponMesh)
+    {
+        // 무기 메시의 애니메이션 인스턴스 가져오기
+        UAnimInstance *WeaponAnimInstance = WeaponMesh->GetAnimInstance();
+        if (WeaponAnimInstance)
+        {
+            float Duration = WeaponAnimInstance->Montage_Play(WeaponAnimation, PlayRate);
+            UE_LOG(LogTemp, Warning, TEXT("Weapon Animation Duration: %f, PlayRate: %f"), Duration, PlayRate);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("Weapon Animation Instance is null!"));
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Weapon Animation or WeaponMesh is null!"));
+    }
+}
