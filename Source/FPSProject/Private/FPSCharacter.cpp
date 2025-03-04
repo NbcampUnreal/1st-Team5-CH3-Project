@@ -224,10 +224,17 @@ void AFPSCharacter::TakeDamage(float DamageAmount)
 
     UE_LOG(LogTemp, Warning, TEXT("Character took damage: %f, Current Health: %f"), DamageAmount, Health);
 
+
     ABasicGameState* BasicGameState = Cast<ABasicGameState>(UGameplayStatics::GetGameState(this));
     if (BasicGameState)
     {
         BasicGameState->UpdateHealthHUD();
+    }
+
+
+    if (HurtSound)
+    {
+        UGameplayStatics::PlaySoundAtLocation(this, HurtSound, GetActorLocation());
     }
 
     if (Health <= 0)
