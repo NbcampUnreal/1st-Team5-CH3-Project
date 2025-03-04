@@ -1,6 +1,11 @@
 #include "EnemyCharacter.h"
-#include "GameFramework/CharacterMovementComponent.h"
+#include "FPSCharacter.h"
+#include "Animation/AnimInstance.h"
+#include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Blueprint/UserWidget.h"
+#include "GameFramework/PlayerController.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "EnemyAIController.h"
 #include "BasicGameInstance.h"
 #include "GameFramework/DamageType.h"
@@ -100,6 +105,13 @@ void AEnemyCharacter::BeginPlay()
     // 수면 상태 위젯 초기화
     if (SleepStateWidgetComp)
     {
+        // 위젯을 World 스페이스로 유지하면서 빌보드 효과 설정
+        SleepStateWidgetComp->SetWidgetSpace(EWidgetSpace::World);
+
+        // 위젯 렌더링 설정 조정
+        SleepStateWidgetComp->SetDrawAtDesiredSize(true);
+        SleepStateWidgetComp->SetPivot(FVector2D(0.5f, 0.5f));
+
         if (UUserWidget *Widget = Cast<UUserWidget>(SleepStateWidgetComp->GetWidget()))
         {
             // 위젯에 Enemy 참조 설정
@@ -124,6 +136,25 @@ void AEnemyCharacter::BeginPlay()
 void AEnemyCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    // 수면 위젯이 항상 카메라를 향하도록 회전
+    if (SleepStateWidgetComp && SleepStateWidgetComp->IsVisible())
+    {
+        // 플레이어 카메라 위치 가져오기
+        APlayerController *PC = GetWorld()->GetFirstPlayerController();
+        if (PC && PC->PlayerCameraManager)
+        {
+            FVector CameraLocation = PC->PlayerCameraManager->GetCameraLocation();
+            FVector Direction = CameraLocation - SleepStateWidgetComp->GetComponentLocation();
+            Direction.Z = 0.0f; // 수평 방향만 고려 (선택적)
+
+            if (!Direction.IsNearlyZero())
+            {
+                FRotator NewRotation = Direction.Rotation();
+                SleepStateWidgetComp->SetWorldRotation(NewRotation);
+            }
+        }
+    }
 
     // 수면 상태일 때 타이머 업데이트
     if (bIsSleeping && SleepDuration > 0.0f)
