@@ -32,8 +32,6 @@ private:
 	bool bIsFirstPerson = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Stats", meta = (AllowPrivateAccess = "true"))
-	float MaxHealth;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Stats", meta = (AllowPrivateAccess = "true"))
 	float Health;
 
 	bool bIsAlive = true;
@@ -52,16 +50,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void StopCrouch(const FInputActionValue& Value);
 
-	// getter
-	UFUNCTION(BlueprintCallable, Category = "Character Stats")
-	float GetMaxHealth() const;
+
+
 	UFUNCTION(BlueprintCallable, Category = "Character Stats")
 	float GetHealth() const;
-	//setter
-	UFUNCTION(BlueprintCallable, Category = "Character Stats")
-	void SetMaxHealth(float amount);
-	UFUNCTION(BlueprintCallable, Category = "Character Stats")
-	void SetHealth(float amount);
 
 	UFUNCTION(BlueprintCallable, Category = "Character Stats")
 	virtual void TakeDamage(float DamageAmount) override;
@@ -81,7 +73,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Character State")
 	ECharacterState GetCurrentState() const { return CurrentState; }
 
-
+	// 캐릭터 상태 변경 시 호출 (Sprint, Crouch 등의 함수에서 자동 호출)
+	UFUNCTION(BlueprintCallable, Category = "Character State")
+	void SetCharacterState(ECharacterState NewState);
 
 	// 현재 장착된 무기
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
@@ -138,6 +132,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UAnimMontage* DeathMontage;
 
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	USoundBase* HurtSound;
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION()
@@ -164,6 +161,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character State")
 	ECharacterState CurrentState = ECharacterState::Normal;
 
+	// 상태 변경 시 블루프린트에서 처리할 이벤트
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character State")
+	void OnStateChanged(ECharacterState NewState);
 
 	// 상태 변경 시 C++에서 처리할 로직
 	UFUNCTION()
