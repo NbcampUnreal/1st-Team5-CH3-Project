@@ -28,6 +28,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "AI")
     bool IsInAttackRange();
 
+    // 디버그 시각화 함수
+    UFUNCTION(BlueprintCallable, Category = "Debug")
+    void DrawDebugDetectionRange();
+
 protected:
     virtual void BeginPlay() override;
     

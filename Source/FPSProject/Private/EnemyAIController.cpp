@@ -52,6 +52,11 @@ void AEnemyAIController::Tick(float DeltaTime)
     
     // 매 Tick마다 플레이어 감지 상태 업데이트
     UpdatePlayerDetection();
+    
+    // 디버그 시각화
+    #if WITH_EDITOR
+    DrawDebugDetectionRange();
+    #endif
 }
 
 void AEnemyAIController::UpdatePlayerDetection()
@@ -76,10 +81,6 @@ void AEnemyAIController::UpdatePlayerDetection()
     
     if (Enemy)
     {
-        // 플레이어 감지 상태 업데이트
-        Enemy->SetPlayerDetected(bCanSeePlayer);
-        
-        // 추격 상태 업데이트
         Enemy->bIsChasing = bCanSeePlayer;
         Enemy->UpdateMovementSpeed();
     }
@@ -178,4 +179,78 @@ bool AEnemyAIController::IsInAttackRange()
     }
     
     return false;
+}
+
+void AEnemyAIController::DrawDebugDetectionRange()
+{
+    AEnemyCharacter* EnemyChar = Cast<AEnemyCharacter>(GetPawn());
+    if (!EnemyChar) return;
+    
+    // 감지 범위 시각화 (흰색 원)
+    DrawDebugSphere(
+        GetWorld(),
+        EnemyChar->GetActorLocation(),
+        EnemyChar->GetDetectionRange(),
+        32,  // 세그먼트 수
+        FColor::White,
+        false,  // 지속적
+        -1.0f,  // 수명
+        0,
+        1.0f  // 두께
+    );
+    
+    // 공격 범위 시각화 (빨간색 부채꼴)
+    float AttackRange = EnemyChar->GetAttackRange();
+    FVector EnemyLocation = EnemyChar->GetActorLocation();
+    FVector EnemyForward = EnemyChar->GetActorForwardVector();
+    FVector EnemyRight = EnemyChar->GetActorRightVector();
+    
+    // 부채꼴 그리기
+    for (float Angle = -30.0f; Angle <= 30.0f; Angle += 5.0f)
+    {
+        float AngleRad = FMath::DegreesToRadians(Angle);
+        FVector Direction = EnemyForward * FMath::Cos(AngleRad) + EnemyRight * FMath::Sin(AngleRad);
+        
+        DrawDebugLine(
+            GetWorld(),
+            EnemyLocation,
+            EnemyLocation + Direction * AttackRange,
+            FColor::Red,
+            false,
+            -1.0f,
+            0,
+            1.0f
+        );
+    }
+    
+    // 부채꼴 외곽선 그리기
+    int32 NumSegments = 12;
+    float AngleStep = 60.0f / NumSegments;  // 60도 부채꼴
+    
+    for (int32 i = 0; i <= NumSegments; i++)
+    {
+        float Angle = -30.0f + i * AngleStep;
+        float AngleRad = FMath::DegreesToRadians(Angle);
+        FVector Direction = EnemyForward * FMath::Cos(AngleRad) + EnemyRight * FMath::Sin(AngleRad);
+        FVector EndPoint = EnemyLocation + Direction * AttackRange;
+        
+        if (i > 0)
+        {
+            float PrevAngle = -30.0f + (i-1) * AngleStep;
+            float PrevAngleRad = FMath::DegreesToRadians(PrevAngle);
+            FVector PrevDirection = EnemyForward * FMath::Cos(PrevAngleRad) + EnemyRight * FMath::Sin(PrevAngleRad);
+            FVector PrevEndPoint = EnemyLocation + PrevDirection * AttackRange;
+            
+            DrawDebugLine(
+                GetWorld(),
+                PrevEndPoint,
+                EndPoint,
+                FColor::Red,
+                false,
+                -1.0f,
+                0,
+                1.0f
+            );
+        }
+    }
 }

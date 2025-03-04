@@ -230,11 +230,6 @@ void AFPSCharacter::TakeDamage(float DamageAmount)
         BasicGameState->UpdateHealthHUD();
     }
 
-    if (HurtSound)
-    {
-        UGameplayStatics::PlaySoundAtLocation(this, HurtSound, GetActorLocation());
-    }
-
     if (Health <= 0)
     {
         Die();

@@ -140,9 +140,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UAnimMontage* DeathMontage;
 
-	UPROPERTY(EditAnywhere, Category = "Sound")
-	USoundBase* HurtSound;
-
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION()
