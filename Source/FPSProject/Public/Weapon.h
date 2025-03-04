@@ -39,7 +39,15 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	int32 RemainingTotalAmmo; //소지한 탄약
+	//Sound
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* ReloadSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* FireSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* DryFireSound;
 
+	FTimerHandle ReloadTimerHandle;
 public:
 	//getter
 	UFUNCTION(BlueprintCallable)
@@ -67,6 +75,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void Reload();  // 탄약 재장전
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	virtual void ReloadAmmo();  // 탄약 재장전
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void Equip();  // 무기 장착

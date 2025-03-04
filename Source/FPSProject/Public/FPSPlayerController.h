@@ -105,6 +105,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Timer")
 	FString GetCurrentPlayTime();
 
+
+
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 };

@@ -8,7 +8,6 @@
 #include "CharacterInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "BasicGameState.h"
-#include "Components/ArrowComponent.h"
 
 AFPSCharacter::AFPSCharacter()
 {
@@ -16,11 +15,15 @@ AFPSCharacter::AFPSCharacter()
 
     PrimaryActorTick.bCanEverTick = false;
 
-    FirePosition = CreateDefaultSubobject<UArrowComponent>(TEXT("FirePosition"));
+    FirePosition = CreateDefaultSubobject<USceneComponent>(TEXT("FirePosition"));
     FirePosition->SetupAttachment(RootComponent);
+    FTransform LocalTransform(
+        FRotator::ZeroRotator,  // 회전값
+        FVector(88.0f, 24.0f, 38.0f),  // 위치값
+        FVector(1.0f, 1.0f, 1.0f)  // 스케일 (0.f -> 1.f로 변경)
+    );
 
-    FirePosition->SetRelativeLocation(FVector(88.0f, 24.0f, 38.0f));
-
+    FirePosition->SetRelativeTransform(LocalTransform);
 
 
     SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
@@ -534,9 +537,10 @@ void AFPSCharacter::EquipWeapon(int32 WeaponIndex)
 
 void AFPSCharacter::Fire()
 {
-
+    UE_LOG(LogTemp, Warning, TEXT("Fire() 호출됨!"));
     if (CurrentWeapon)
     {
+        UE_LOG(LogTemp, Warning, TEXT("무기 생성"));
         CurrentWeapon->Fire();
         ABasicGameState* BasicGameState = Cast<ABasicGameState>(UGameplayStatics::GetGameState(this));
         if (BasicGameState)

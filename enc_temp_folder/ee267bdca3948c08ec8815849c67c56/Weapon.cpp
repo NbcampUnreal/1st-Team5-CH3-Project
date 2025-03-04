@@ -22,6 +22,7 @@ void AWeapon::BeginPlay()
 
 void AWeapon::Fire()
 {
+	UE_LOG(LogTemp, Warning, TEXT("우리리"));
 
 	if (CurrentAmmo > 0)
 	{
@@ -33,6 +34,7 @@ void AWeapon::Fire()
 				GetActorLocation()
 			);
 		}
+		UE_LOG(LogTemp, Warning, TEXT("Fire Ammo"));
 		CurrentAmmo--;
 	}
 	else
