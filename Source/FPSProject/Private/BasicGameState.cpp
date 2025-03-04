@@ -18,7 +18,7 @@ ABasicGameState::ABasicGameState()
     bIsPause = false;
 
     PrimaryActorTick.bCanEverTick = true;
-    CurrentMissionText = TEXT("잠은 죽어서 자자");
+    CurrentMissionText = TEXT("미션 : 잠은 죽어서 자자");
 }
 
 void ABasicGameState::BeginPlay()
@@ -163,7 +163,7 @@ void ABasicGameState::UpdateAmmoHUD()
                 // TotalAmmo Text
                 if (UTextBlock* TotalAmmoText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("TotalAmmoText"))))
                 {
-                    int32 TotalAmmo = FPSCharacter->CurrentWeapon->GetMaxAmmo();
+                    int32 TotalAmmo = FPSCharacter->CurrentWeapon->GetTotalAmmo();
                     TotalAmmoText->SetText(FText::FromString(
                         FString::Printf(TEXT("%d"), TotalAmmo)
                     ));
@@ -211,13 +211,13 @@ void ABasicGameState::UpdateWeaponHUD()
                         switch (FPSCharacter->CurrentWeapon->GetWeaponType())
                         {
                         case EWeaponType::NormalGun:
-                            AssetPath = "/Game/Image/GunImage.png";
+                            AssetPath = "/Game/Image/GunImage.GunImage";
                             WeaponText->SetText(FText::FromString(
                                 FString::Printf(TEXT("소총"))
                             ));
                             break;
                         case EWeaponType::StunGun:
-                            AssetPath = "/Game/Image/GunImage.png";
+                            AssetPath = "/Game/Image/StunGun.StunGun";
                             WeaponText->SetText(FText::FromString(
                                 FString::Printf(TEXT("마취총"))
                             ));

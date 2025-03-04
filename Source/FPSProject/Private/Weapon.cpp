@@ -7,6 +7,7 @@ AWeapon::AWeapon()
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	RootComponent = WeaponMesh;
 
+	RemainingTotalAmmo = 20;
 	MaxAmmo = 10;
 	CurrentAmmo = MaxAmmo;
 }
@@ -21,19 +22,20 @@ void AWeapon::Fire()
 {
 	if (CurrentAmmo > 0)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Fire Ammo"));
 		CurrentAmmo--;
-		UE_LOG(LogTemp, Warning, TEXT("%s Fired! Ammo: %d/%d"), *GetName(), CurrentAmmo, MaxAmmo);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Out of Ammo! Reload Needed."));
+		//Reload 알림이나 소리
 	}
 }
 
 void AWeapon::Reload()
 {
-	CurrentAmmo = MaxAmmo;
-	UE_LOG(LogTemp, Warning, TEXT("%s Reloaded! Ammo: %d/%d"), *GetName(), CurrentAmmo, MaxAmmo);
+	int32 ReloadCount = std::min(MaxAmmo-CurrentAmmo, RemainingTotalAmmo);
+	RemainingTotalAmmo -= ReloadCount;
+	CurrentAmmo += ReloadCount;
 }
 
 void AWeapon::Equip()

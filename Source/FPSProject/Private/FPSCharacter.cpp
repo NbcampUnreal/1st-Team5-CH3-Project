@@ -363,14 +363,12 @@ void AFPSCharacter::Viewpoint_Transformation()
 
 void AFPSCharacter::SelectWeapon1()
 {
-    UE_LOG(LogTemp, Warning, TEXT("무기 1 선택됨!"));
     EquipWeapon(0);
 
 }
 
 void AFPSCharacter::SelectWeapon2()
 {
-    UE_LOG(LogTemp, Warning, TEXT("무기 2 선택됨!"));
     EquipWeapon(1);
 }
 
@@ -530,7 +528,6 @@ void AFPSCharacter::Fire()
 {
     if (CurrentWeapon)
     {
-        UE_LOG(LogTemp, Warning, TEXT("Fire() 호출됨, 무기 발사!"));
         CurrentWeapon->Fire();
         ABasicGameState* BasicGameState = Cast<ABasicGameState>(UGameplayStatics::GetGameState(this));
         if (BasicGameState)
@@ -548,7 +545,11 @@ void AFPSCharacter::Reload()
     if (CurrentWeapon)
     {
         CurrentWeapon->Reload();  // 무기 재장전 실행
-        UE_LOG(LogTemp, Warning, TEXT("Reload() 호출됨! 무기 재장전 완료."));
+        ABasicGameState* BasicGameState = Cast<ABasicGameState>(UGameplayStatics::GetGameState(this));
+        if (BasicGameState)
+        {
+            BasicGameState->UpdateAmmoHUD();
+        }
     }
     else
     {

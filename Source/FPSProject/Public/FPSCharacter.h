@@ -105,6 +105,7 @@ public:
 	void SelectWeapon1();
 	void SelectWeapon2();
 	// **총 발사 요청**
+	UFUNCTION(BlueprintCallable)
 	void Fire();
 	// 재장전
 	void Reload();

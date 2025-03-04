@@ -29,11 +29,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	EWeaponType WeaponType;  // 무기 타입
 
+	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	int32 MaxAmmo;  // 최대 탄약 수
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	int32 CurrentAmmo;  // 현재 탄약
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	int32 RemainingTotalAmmo; //소지한 탄약
 
 public:
 	//getter
@@ -42,12 +47,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int32 GetCurrentAmmo() { return CurrentAmmo; } const
 	UFUNCTION(BlueprintCallable)
+	int32 GetTotalAmmo() { return RemainingTotalAmmo; } const
+	UFUNCTION(BlueprintCallable)
 	EWeaponType GetWeaponType() { return WeaponType; } const
 	//setter
 	UFUNCTION(BlueprintCallable)
 	void SetMaxAmmo(int32 Amount) { MaxAmmo = Amount; }
 	UFUNCTION(BlueprintCallable)
 	void SetCurrentAmmo(int32 Amount) { CurrentAmmo = Amount; }
+	UFUNCTION(BlueprintCallable)
+	void SetRemainingTotalAmmo(int32 Amount) { RemainingTotalAmmo = Amount; }
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponType(EWeaponType Amount) { WeaponType = Amount; }
 
