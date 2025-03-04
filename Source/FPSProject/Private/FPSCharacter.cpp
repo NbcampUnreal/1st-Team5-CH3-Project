@@ -395,7 +395,6 @@ void AFPSCharacter::StopCrouch(const FInputActionValue& Value)
         // 크라우치 종료
         UnCrouch();
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
-        SetCharacterState(ECharacterState::Normal);        // AI 감지용 상태 변경
     }
 }
 

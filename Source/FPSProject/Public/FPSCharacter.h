@@ -81,9 +81,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Character State")
 	ECharacterState GetCurrentState() const { return CurrentState; }
 
-	// 캐릭터 상태 변경 시 호출 (Sprint, Crouch 등의 함수에서 자동 호출)
-	UFUNCTION(BlueprintCallable, Category = "Character State")
-	void SetCharacterState(ECharacterState NewState);
+
 
 	// 현재 장착된 무기
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
