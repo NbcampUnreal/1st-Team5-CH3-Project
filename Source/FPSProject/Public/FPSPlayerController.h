@@ -30,6 +30,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	UInputAction* SprintAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	UInputAction* PauseAction;
+
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	UInputAction* Viewpoint_TransformationAction;
@@ -49,20 +52,58 @@ public:
 	UInputAction* ReloadAction;
 
 	//Widget
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Menu")
+
+	// HUD
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
 	TSubclassOf<UUserWidget> HUDWidgetClass;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Menu")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "HUD")
 	UUserWidget* HUDWidgetInstance;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameOver")
+	// MainMenu
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Menu|Main")
+	TSubclassOf<UUserWidget> MainMenuWidgetClass;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Menu|Main")
+	UUserWidget* MainMenuWidgetInstance;
+
+	// Pause Menu
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Menu|Pause")
+	TSubclassOf<UUserWidget> PauseMenuWidgetClass;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Menu|Pause")
+	UUserWidget* PauseMenuWidgetInstance;
+
+	// Game Over
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Menu|GameOver")
 	TSubclassOf<UUserWidget> GameOverWidgetClass;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "GameOver")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Menu|GameOver")
 	UUserWidget* GameOverWidgetInstance;
 
+	bool IsPaused;
 
 
-	UFUNCTION()
+
+	//HUD UI
+	UFUNCTION(BlueprintPure, Category = "HUD")
+	UUserWidget* GetHUDWidget() const;
+
+
+
+	UFUNCTION(BlueprintCallable, Category = "MainMenu")
+	void ShowMainMenu();
+
+	UFUNCTION(BlueprintCallable, Category = "GameOver")
 	void ShowGameOverScreen();
 
+	UFUNCTION(BlueprintCallable)
+	void StartGame();
+	UFUNCTION(BlueprintCallable)
+	void QuitGame();
+	UFUNCTION(BlueprintCallable)
+	void TogglePauseMenu();
+
+
+	UFUNCTION(BlueprintCallable, Category = "Timer")
+	FString GetCurrentPlayTime();
+
 	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
 };

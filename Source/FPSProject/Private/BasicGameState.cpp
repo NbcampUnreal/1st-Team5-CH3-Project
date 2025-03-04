@@ -11,12 +11,25 @@ ABasicGameState::ABasicGameState()
     Score = 0;
     KillCount = 0;
     SleepCount = 0;
+    bIsPause = false;
+
+    PrimaryActorTick.bCanEverTick = true;
 }
 
 void ABasicGameState::BeginPlay()
 {
     Super::BeginPlay();
     UE_LOG(LogTemp, Warning, TEXT("SpartaGameState::BeginPlay() 실행됨! 현재 맵: %s"), *GetWorld()->GetMapName());
+}
+
+void ABasicGameState::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    if (!bIsPause)
+    {
+        CurrentPlayTime += DeltaTime;
+    }
 }
 
 int32 ABasicGameState::GetScore() const
@@ -34,6 +47,13 @@ void ABasicGameState::AddScore(int32 Amount)
 
 void ABasicGameState::OnGameOver()
 {
+    bIsPause = true;
+    UBasicGameInstance* BasicGameInstance = Cast<UBasicGameInstance>(UGameplayStatics::GetGameInstance(this));
+    if (BasicGameInstance)
+    {
+        BasicGameInstance->TotalPlayTime += CurrentPlayTime;
+    }
+
     if (AFPSPlayerController* PlayerController = GetFPSPlayerController())
     {
         PlayerController->SetPause(true);
@@ -67,6 +87,23 @@ void ABasicGameState::SetGamePhase(EGamePhase NewPhase)
 
 void ABasicGameState::UpdateHUD()
 {
+    if (AFPSPlayerController* FPSPlayerController = GetFPSPlayerController())
+    {
+        if (UUserWidget* HUDWidget = FPSPlayerController->GetHUDWidget())
+        {
+
+        }
+    }
+}
+
+FString ABasicGameState::GetFormattedPlayTime()
+{
+    int32 TotalSeconds = FMath::RoundToInt(CurrentPlayTime);
+    int32 Hours = TotalSeconds / 3600;
+    int32 Minutes = (TotalSeconds % 3600) / 60;
+    int32 Seconds = TotalSeconds % 60;
+
+    return FString::Printf(TEXT("플레이 시간 : %02d:%02d:%02d"), Hours, Minutes, Seconds);
 }
 
 void ABasicGameState::StartStealthPhase()
