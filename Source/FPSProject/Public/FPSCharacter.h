@@ -169,9 +169,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character State")
 	ECharacterState CurrentState = ECharacterState::Normal;
 
-	// 상태 변경 시 블루프린트에서 처리할 이벤트
-	UFUNCTION(BlueprintImplementableEvent, Category = "Character State")
-	void OnStateChanged(ECharacterState NewState);
 
 	// 상태 변경 시 C++에서 처리할 로직
 	UFUNCTION()

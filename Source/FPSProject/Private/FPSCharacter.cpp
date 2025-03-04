@@ -422,15 +422,10 @@ void AFPSCharacter::SetCharacterState(ECharacterState NewState)
     {
         CurrentState = NewState;
         HandleStateChange(NewState);
-        OnStateChanged(NewState);
     }
 }
 
 
-void AFPSCharacter::OnStateChanged(ECharacterState NewState)
-{
-
-}
 
 void AFPSCharacter::HandleStateChange(ECharacterState NewState)
 {
