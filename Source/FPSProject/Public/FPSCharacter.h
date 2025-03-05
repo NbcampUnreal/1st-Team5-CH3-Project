@@ -105,6 +105,7 @@ public:
 	void SelectWeapon1();
 	void SelectWeapon2();
 	// **총 발사 요청**
+	UFUNCTION(BlueprintCallable)
 	void Fire();
 	// 재장전
 	void Reload();
@@ -124,6 +125,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FirePosition")
+	UArrowComponent* FirePosition;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float NormalSpeed;
@@ -176,4 +179,5 @@ protected:
 	// 상태 변경 시 C++에서 처리할 로직
 	UFUNCTION()
 	virtual void HandleStateChange(ECharacterState NewState);
+
 };

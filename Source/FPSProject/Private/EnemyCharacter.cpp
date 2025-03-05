@@ -340,6 +340,7 @@ void AEnemyCharacter::Die()
         if (UBasicGameInstance *BasicGameInstance = Cast<UBasicGameInstance>(GameInstance))
         {
             BasicGameInstance->AddKill(); // 킬 카운트만 증가
+            BasicGameInstance->AddScore(300);
             UE_LOG(LogTemp, Warning, TEXT("Enemy died! Kill Count: %d"), BasicGameInstance->TotalKillCount);
         }
     }

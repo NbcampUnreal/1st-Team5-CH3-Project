@@ -8,12 +8,20 @@
 #include "CharacterInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "BasicGameState.h"
+#include "Components/ArrowComponent.h"
 
 AFPSCharacter::AFPSCharacter()
 {
     GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
     PrimaryActorTick.bCanEverTick = false;
+
+    FirePosition = CreateDefaultSubobject<UArrowComponent>(TEXT("FirePosition"));
+    FirePosition->SetupAttachment(RootComponent);
+
+    FirePosition->SetRelativeLocation(FVector(88.0f, 24.0f, 38.0f));
+
+
 
     SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
     SpringArmComp->SetupAttachment(RootComponent);
@@ -363,14 +371,12 @@ void AFPSCharacter::Viewpoint_Transformation()
 
 void AFPSCharacter::SelectWeapon1()
 {
-    UE_LOG(LogTemp, Warning, TEXT("무기 1 선택됨!"));
     EquipWeapon(0);
 
 }
 
 void AFPSCharacter::SelectWeapon2()
 {
-    UE_LOG(LogTemp, Warning, TEXT("무기 2 선택됨!"));
     EquipWeapon(1);
 }
 
@@ -528,9 +534,9 @@ void AFPSCharacter::EquipWeapon(int32 WeaponIndex)
 
 void AFPSCharacter::Fire()
 {
+
     if (CurrentWeapon)
     {
-        UE_LOG(LogTemp, Warning, TEXT("Fire() 호출됨, 무기 발사!"));
         CurrentWeapon->Fire();
         ABasicGameState* BasicGameState = Cast<ABasicGameState>(UGameplayStatics::GetGameState(this));
         if (BasicGameState)
@@ -548,7 +554,6 @@ void AFPSCharacter::Reload()
     if (CurrentWeapon)
     {
         CurrentWeapon->Reload();  // 무기 재장전 실행
-        UE_LOG(LogTemp, Warning, TEXT("Reload() 호출됨! 무기 재장전 완료."));
     }
     else
     {
