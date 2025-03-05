@@ -18,7 +18,9 @@ AFPSCharacter::AFPSCharacter()
     WalkAudioComponent->SetupAttachment(GetRootComponent());
     WalkAudioComponent->bAutoActivate = false;  // 자동 실행 방지
     
-
+    SprintAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("SprintAudioComponent"));
+    SprintAudioComponent->SetupAttachment(GetRootComponent());
+    SprintAudioComponent->bAutoActivate = false;  // 자동 실행 방지
 
     PrimaryActorTick.bCanEverTick = false;
 
@@ -178,9 +180,13 @@ void AFPSCharacter::StartMove(const FInputActionValue& value)
 
     const FVector2D MoveInput = value.Get<FVector2D>();
     float Speed = GetCharacterMovement()->Velocity.Size(); // 현재 속도 가져오기
-    if (Speed > 10.0f)  // 걷기 시작할 때
+    if (Speed > 380.0f && Speed <405.0f )  // 걷기 시작할 때
     {
         StartWalkSound();
+    }
+    else if(Speed>410.0f)
+    {
+        StopWalkSound();
     }
     
 
@@ -223,7 +229,34 @@ void AFPSCharacter::StopWalkSound()
     }
 }
 
+void AFPSCharacter::StartSprintSound()
+{
+   
 
+    if (SprintSound && SprintAudioComponent)
+    {
+        if (!SprintAudioComponent->IsPlaying()) // 이미 재생 중이면 다시 재생하지 않음
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Sprint Sound start"));
+            SprintAudioComponent->SetSound(SprintSound);
+            SprintAudioComponent->Play();
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("SprintSound 또는 SprintAudioComponent가 NULL입니다!"));
+    }
+}
+
+
+
+void AFPSCharacter::StopSprintSound()
+{
+    if (SprintAudioComponent && SprintAudioComponent->IsPlaying())
+    {
+        SprintAudioComponent->Stop();
+    }
+}
 
 
 
@@ -254,9 +287,22 @@ void AFPSCharacter::StartSprint(const FInputActionValue& value)
 {
     if (GetCharacterMovement())
     {
+       
         GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
         SetCharacterState(ECharacterState::Sprinting);  // AI 감지용 상태 변경
+
+        FTimerHandle TimerHandle_StopWalkSound;
+        GetWorld()->GetTimerManager().SetTimer(
+            TimerHandle_StopWalkSound,
+            this,
+            &AFPSCharacter::StopWalkSound, // 0.1초 후 실행할 함수
+            0.1f,
+            false // 반복 실행 여부 (false: 한 번만 실행)
+        );
+        StartSprintSound();
+       
     }
+    
 }
 
 void AFPSCharacter::StopSprint(const FInputActionValue& value)
@@ -265,6 +311,14 @@ void AFPSCharacter::StopSprint(const FInputActionValue& value)
     {
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
         SetCharacterState(ECharacterState::Normal);     // AI 감지용 상태 변경
+        FTimerHandle TimerHandle_StopSprintSound;
+        GetWorld()->GetTimerManager().SetTimer(
+            TimerHandle_StopSprintSound,
+            this,
+            &AFPSCharacter::StopSprintSound, // 0.1초 후 실행할 함수
+            0.1f,
+            false // 반복 실행 여부 (false: 한 번만 실행)
+        );
     }
 }
 
@@ -430,15 +484,26 @@ void AFPSCharacter::SelectWeapon2()
 void AFPSCharacter::StartCrouch(const FInputActionValue& Value)
 {
     UE_LOG(LogTemp, Warning, TEXT("Crouch Start Pressed!"));
-
+    
     if (GetCharacterMovement() && !bIsCrouched)
     {
         UE_LOG(LogTemp, Warning, TEXT("Crouch Started!"));
 
         // 크라우치 시작
         Crouch();
+        
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed * 0.5f;
+
         SetCharacterState(ECharacterState::Crouching);     // AI 감지용 상태 변경
+
+        FTimerHandle TimerHandle_StopWalkSound;
+        GetWorld()->GetTimerManager().SetTimer(
+            TimerHandle_StopWalkSound,
+            this,
+            &AFPSCharacter::StopWalkSound, // 0.1초 후 실행할 함수
+            0.1f,
+            false // 반복 실행 여부 (false: 한 번만 실행)
+        );
     }
 }
 
@@ -604,4 +669,8 @@ void AFPSCharacter::Reload()
     {
         UE_LOG(LogTemp, Warning, TEXT("장착된 무기가 없습니다!"));
     }
+}
+AWeapon* AFPSCharacter::GetCurrentWeapon() const
+{
+    return CurrentWeapon; // 현재 장착된 무기 반환
 }

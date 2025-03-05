@@ -61,11 +61,36 @@ void AEnemyAIController::UpdatePlayerDetection()
     AFPSCharacter* Player = Cast<AFPSCharacter>(PlayerPawn);
     AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(GetPawn());
     
-    if (Enemy && Player)
+    if (!Enemy || !Player)
+        return;
+        
+    // 적이 수면 상태이거나 사망 상태인 경우 감지 처리 중단
+    if (Enemy->IsSleeping() || !Enemy->IsAlive())
     {
-        // 플레이어 상태에 따라 감지 범위 업데이트
-        Enemy->UpdateDetectionRangeForPlayerState(Player);
+        if (BlackboardComponent)
+        {
+            BlackboardComponent->SetValueAsObject("TargetActor", nullptr);
+            BlackboardComponent->SetValueAsBool("CanSeePlayer", false);
+        }
+        
+        // 수면 상태에서는 추격 상태 해제
+        if (Enemy->bIsChasing)
+        {
+            Enemy->bIsChasing = false;
+            Enemy->UpdateMovementSpeed();
+        }
+        
+        // 수면 상태에서는 플레이어 감지 상태 해제
+        if (Enemy->IsPlayerDetected())
+        {
+            Enemy->SetPlayerDetected(false);
+        }
+        
+        return;
     }
+
+    // 플레이어 상태에 따라 감지 범위 업데이트
+    Enemy->UpdateDetectionRangeForPlayerState(Player);
 
     bool bCanSeePlayer = CanSeePlayer();
     
@@ -75,15 +100,12 @@ void AEnemyAIController::UpdatePlayerDetection()
         BlackboardComponent->SetValueAsBool("CanSeePlayer", bCanSeePlayer);
     }
     
-    if (Enemy)
-    {
-        // 플레이어 감지 상태 업데이트
-        Enemy->SetPlayerDetected(bCanSeePlayer);
-        
-        // 추격 상태 업데이트
-        Enemy->bIsChasing = bCanSeePlayer;
-        Enemy->UpdateMovementSpeed();
-    }
+    // 플레이어 감지 상태 업데이트
+    Enemy->SetPlayerDetected(bCanSeePlayer);
+    
+    // 추격 상태 업데이트
+    Enemy->bIsChasing = bCanSeePlayer;
+    Enemy->UpdateMovementSpeed();
 }
 
 bool AEnemyAIController::CanSeePlayer()

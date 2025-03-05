@@ -12,6 +12,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 struct FInputActionValue;
+class AWeapon;
 
 // AI 감지 시스템을 위한 캐릭터 상태 정의
 UENUM(BlueprintType)
@@ -44,6 +45,8 @@ private:
 	// 발소리 재생 관련 함수 선언
 	void StartWalkSound();
 	void StopWalkSound();
+	void StartSprintSound();
+	void StopSprintSound();
 
 	FTimerHandle DeathTimerHandle;
 
@@ -117,6 +120,9 @@ public:
 	// 재장전
 	void Reload();
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	AWeapon* GetCurrentWeapon() const;
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -156,8 +162,14 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Sound")
 	USoundBase* WalkSound;
 
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	USoundBase* SprintSound;
+
 	UPROPERTY()
 	UAudioComponent* WalkAudioComponent = nullptr;
+
+	UPROPERTY()
+	UAudioComponent* SprintAudioComponent = nullptr;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
