@@ -268,14 +268,14 @@ void ABasicGameState::SetGamePhase(EGamePhase NewPhase)
 
 void ABasicGameState::StartTutorialPhase()
 {
-    CurrentMissionText = TEXT("임무: 가옥에 잡입하기");
+    CurrentMissionText = TEXT("가옥에 잡입하기");
     GetFPSPlayerController()->ShowMission();
     UpdateMissionHUD();
 }
 
 void ABasicGameState::StartStealthPhase()
 {
-    CurrentMissionText = TEXT("임무: 들키지 않고 안채 깊숙한 곳에서 중요한 문서를 찾기");
+    CurrentMissionText = TEXT("들키지 않고 안채 깊숙한 곳에서 중요한 문서를 찾기");
     if (AFPSPlayerController* FPSPlayerController = GetFPSPlayerController())
     {
         FPSPlayerController->ShowMission();
@@ -300,7 +300,7 @@ void ABasicGameState::StartCombatPhase()
         }
     }
 
-    CurrentMissionText = TEXT("임무: 가옥을 탈출하기");
+    CurrentMissionText = TEXT("가옥을 탈출하기");
     GetFPSPlayerController()->ShowMission();
     UpdateMissionHUD();
 }
