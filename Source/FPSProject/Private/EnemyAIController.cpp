@@ -96,11 +96,11 @@ bool AEnemyAIController::CanSeePlayer()
         return false;
     }
 
-    // 보스 캐릭터인 경우 감지 범위를 3000으로 설정
+    // 보스 캐릭터인 경우 감지 범위를 2500으로 설정
     float DetectionRange = Enemy->GetDetectionRange();
     if (Enemy->IsA(ABossCharacter::StaticClass()))
     {
-        DetectionRange = 2000.0f;
+        DetectionRange = 2500.0f;
     }
 
     // 거리 계산

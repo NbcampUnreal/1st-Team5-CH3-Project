@@ -72,6 +72,7 @@ void AEnemyCharacter::BeginPlay()
     Super::BeginPlay();
     CurrentHealth = MaxHealth;
     
+    // 보스 캐릭터인 경우 감지 범위를 2500으로 설정
     if (this->IsA(ABossCharacter::StaticClass()))
     {
         DetectionRange = 2500.0f;
@@ -680,6 +681,7 @@ void AEnemyCharacter::UpdateDetectionRangeForPlayerState(AFPSCharacter *Player)
     // 보스 캐릭터인지 확인
     if (this->IsA(ABossCharacter::StaticClass()))
     {
+        // 보스 캐릭터는 항상 2500의 감지 범위를 가짐
         float OldDetectionRange = DetectionRange;
         DetectionRange = 2500.0f;
         

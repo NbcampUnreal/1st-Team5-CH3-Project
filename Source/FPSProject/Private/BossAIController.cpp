@@ -64,7 +64,8 @@ bool ABossAIController::CanSeePlayerBoss()
     // 거리 계산
     float Distance = FVector::Dist(Boss->GetActorLocation(), PlayerPawn->GetActorLocation());
     
-    float DetectionRange = 2000.0f;
+    // 보스는 항상 2500의 감지 범위를 가짐
+    float DetectionRange = 2500.0f;
     
     // 감지 범위 내에 있는지 확인
     if (Distance <= DetectionRange)
@@ -147,8 +148,8 @@ void ABossAIController::UpdateBossPlayerDetection()
         // 플레이어와의 거리 계산
         float DistanceToPlayer = FVector::Dist(Boss->GetActorLocation(), PlayerPawn->GetActorLocation());
 
-        // 보스는 항상 3000의 감지 범위를 가짐
-        float DetectionRange = 2000.0f;
+        // 보스는 항상 2500의 감지 범위를 가짐
+        float DetectionRange = 2500.0f;
 
         // 플레이어가 보이는지 확인
         bool bCanSeePlayer = CanSeePlayerBoss();

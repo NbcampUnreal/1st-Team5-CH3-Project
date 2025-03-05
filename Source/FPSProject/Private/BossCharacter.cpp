@@ -16,7 +16,7 @@ ABossCharacter::ABossCharacter()
     AttackSpeedMultiplier = 2.0f;    // 일반 Enemy보다 2배 빠른 공격 속도
     MovementSpeedMultiplier = 2.0f;  // 일반 Enemy보다 2배 빠른 이동 속도
     
-    DetectionRange = 2000.0f;
+    DetectionRange = 2500.0f;
 
     AttackRange = 350.0f; // 기존 값보다 크게 설정
     
@@ -35,7 +35,7 @@ void ABossCharacter::BeginPlay()
     UpdateMovementSpeed();
 
     // 감지 범위와 공격 범위 명시적으로 설정
-    DetectionRange = 2000.0f;
+    DetectionRange = 2500.0f;
     AttackRange = 350.0f;
     
     // 감지 범위 UI 위젯 크기 조정
