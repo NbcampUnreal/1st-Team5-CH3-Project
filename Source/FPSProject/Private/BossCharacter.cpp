@@ -20,7 +20,7 @@ ABossCharacter::ABossCharacter()
 
     AttackRange = 350.0f; // 기존 값보다 크게 설정
     
-    MaxHealth = 300.0f;
+    MaxHealth = 1200.0f;
 }
 
 void ABossCharacter::BeginPlay()
