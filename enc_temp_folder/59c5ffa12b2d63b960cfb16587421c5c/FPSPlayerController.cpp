@@ -67,7 +67,7 @@ void AFPSPlayerController::SetupInputComponent()
     // ESC 키를 누르면 일시 정지
     UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent);
     EnhancedInput->BindAction(PauseAction, ETriggerEvent::Started, this, &AFPSPlayerController::TogglePauseMenu);
-    EnhancedInput->BindAction(HoldAnyKeyAction, ETriggerEvent::Started, this, &AFPSPlayerController::HideMission);
+    EnhancedInput->BindAction(HoldAnyKeyAction, ETriggerEvent::Triggered, this, &AFPSPlayerController::HideMission);
 }
 
 UUserWidget* AFPSPlayerController::GetHUDWidget() const
@@ -204,13 +204,13 @@ void AFPSPlayerController::ShowGameOverScreen()
 
 void AFPSPlayerController::ShowMission()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Show Mission 호출됨"));
     MissionWidgetInstance = CreateWidget<UUserWidget>(this, MissionWidgetClass);
     if (MissionWidgetInstance)
     {
+        SetPause(true);
         FInputModeGameAndUI InputMode;
         InputMode.SetWidgetToFocus(MissionWidgetInstance->TakeWidget()); // UI 포커스 유지
-        SetInputMode(InputMode);
+        SetInputMode(FInputModeGameAndUI());
         bShowMouseCursor = true;
 
         MissionWidgetInstance->AddToViewport();
@@ -278,6 +278,10 @@ void AFPSPlayerController::ShowMission()
         {
             MissionWidgetInstance->ProcessEvent(PlayAnimFunc, nullptr);
         }
+
+
+
+
     }
     bMissionActive = true;
 

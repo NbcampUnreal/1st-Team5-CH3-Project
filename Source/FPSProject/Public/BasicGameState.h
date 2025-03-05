@@ -14,9 +14,9 @@ enum class EGamePhase : uint8
 {
 	Tutorial UMETA(DisplayName = "Tutorial"),
 	Stealth UMETA(DisplayName = "Stealth"),  
-	Combat UMETA(DisplayName = "Combat"),    
-	Escape UMETA(DisplayName = "Escape"),   
-	GameOver UMETA(DisplayName = "Game Over")     
+	Combat UMETA(DisplayName = "Combat"),      
+	GameOver UMETA(DisplayName = "GameOver"),    
+	GameClear UMETA(DisplayName = "GameClear")
 };
 
 UCLASS()
@@ -67,6 +67,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	FString GetAmmoCount();
 	
+	void StartTutorialPhase();
 	void StartStealthPhase();
 	void StartCombatPhase();
 

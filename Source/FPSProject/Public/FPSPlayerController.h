@@ -50,6 +50,8 @@ public:
 	UInputAction* FireAction;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	UInputAction* ReloadAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	UInputAction* HoldAnyKeyAction;
 
 	//Widget
 
@@ -71,6 +73,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Menu|Pause")
 	UUserWidget* PauseMenuWidgetInstance;
 
+	//Mission
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD|Mission")
+	TSubclassOf<UUserWidget> MissionWidgetClass;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "HUD|Mission")
+	UUserWidget* MissionWidgetInstance;
+
 	// Game Over
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Menu|GameOver")
 	TSubclassOf<UUserWidget> GameOverWidgetClass;
@@ -78,7 +86,7 @@ public:
 	UUserWidget* GameOverWidgetInstance;
 
 	bool IsPaused;
-
+	bool bMissionActive;
 
 
 	//HUD UI
@@ -93,6 +101,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "GameOver")
 	void ShowGameOverScreen();
+	UFUNCTION(BlueprintCallable, Category = "Mission")
+	void ShowMission();
+	UFUNCTION(BlueprintCallable, Category = "Mission")
+	void HideMission();
 
 	UFUNCTION(BlueprintCallable)
 	void StartGame();
@@ -100,6 +112,8 @@ public:
 	void QuitGame();
 	UFUNCTION(BlueprintCallable)
 	void TogglePauseMenu();
+	
+
 
 
 	UFUNCTION(BlueprintCallable, Category = "Timer")
