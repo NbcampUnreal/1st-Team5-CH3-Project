@@ -96,11 +96,9 @@ void AFPSPlayerController::ShowGameHUD()
             bShowMouseCursor = false;
             SetInputMode(FInputModeGameOnly());
         }
-        UE_LOG(LogTemp, Warning, TEXT("Create WidgetInstance"));
         ABasicGameState* BasicGameState = GetWorld() ? GetWorld()->GetGameState<ABasicGameState>() : nullptr;
         if (BasicGameState) {
             BasicGameState->UpdateHUD();
-            UE_LOG(LogTemp, Warning, TEXT("UpdateHUD "));
         }
     }
 }
