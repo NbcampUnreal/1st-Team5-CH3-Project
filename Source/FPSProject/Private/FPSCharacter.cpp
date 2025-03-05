@@ -439,8 +439,6 @@ void AFPSCharacter::StartCrouch(const FInputActionValue& Value)
         Crouch();
         
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed * 0.5f;
-        float Speed = GetCharacterMovement()->Velocity.Size();
-        UE_LOG(LogTemp, Warning, TEXT("Crouch Stopped! Speed: %f"), Speed);
 
         SetCharacterState(ECharacterState::Crouching);     // AI 감지용 상태 변경
 
