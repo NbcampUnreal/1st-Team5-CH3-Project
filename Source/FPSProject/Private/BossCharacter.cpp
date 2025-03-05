@@ -16,11 +16,10 @@ ABossCharacter::ABossCharacter()
     AttackSpeedMultiplier = 2.0f;    // 일반 Enemy보다 2배 빠른 공격 속도
     MovementSpeedMultiplier = 2.0f;  // 일반 Enemy보다 2배 빠른 이동 속도
     
-    DetectionRange = 1500.0f;
+    DetectionRange = 2500.0f;
 
     AttackRange = 350.0f; // 기존 값보다 크게 설정
-
-    // 더 많은 체력 설정
+    
     MaxHealth = 300.0f;
 }
 
@@ -36,10 +35,18 @@ void ABossCharacter::BeginPlay()
     UpdateMovementSpeed();
 
     // 감지 범위와 공격 범위 명시적으로 설정
-    DetectionRange = 2000.0f;
+    DetectionRange = 2500.0f;
     AttackRange = 350.0f;
+    
+    // 감지 범위 UI 위젯 크기 조정
+    if (DetectionRangeWidgetComp)
+    {
+        DetectionRangeWidgetComp->SetDrawSize(FVector2D(DetectionRange * 2.0f, DetectionRange * 2.0f));
+    }
 
+#if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
     UE_LOG(LogTemp, Warning, TEXT("보스 캐릭터 감지 범위 설정: %f (시야각 제한 없음)"), DetectionRange);
+#endif
 
     // 충돌 컴포넌트 조정 - 보스의 크기에 맞게 조정
     UCapsuleComponent *CapsuleComp = GetCapsuleComponent();

@@ -15,7 +15,9 @@ void ABossAIController::BeginPlay()
 {
     Super::BeginPlay();
 
+#if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
     UE_LOG(LogTemp, Warning, TEXT("보스 AI 컨트롤러가 시작되었습니다."));
+#endif
 }
 
 void ABossAIController::OnPossess(APawn *InPawn)
@@ -25,13 +27,17 @@ void ABossAIController::OnPossess(APawn *InPawn)
     ABossCharacter *BossCharacter = Cast<ABossCharacter>(InPawn);
     if (BossCharacter)
     {
+#if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
         UE_LOG(LogTemp, Warning, TEXT("보스 AI 컨트롤러가 보스 캐릭터를 제어합니다."));
+#endif
 
         if (BossBehaviorTree)
         {
             BlackboardComponent->InitializeBlackboard(*BossBehaviorTree->BlackboardAsset);
             BehaviorTreeComponent->StartTree(*BossBehaviorTree);
+#if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
             UE_LOG(LogTemp, Warning, TEXT("보스 전용 행동 트리를 시작합니다."));
+#endif
         }
     }
 }
@@ -58,8 +64,11 @@ bool ABossAIController::CanSeePlayerBoss()
     // 거리 계산
     float Distance = FVector::Dist(Boss->GetActorLocation(), PlayerPawn->GetActorLocation());
     
+    // 보스는 항상 2500의 감지 범위를 가짐
+    float DetectionRange = 2500.0f;
+    
     // 감지 범위 내에 있는지 확인
-    if (Distance <= Boss->GetDetectionRange())
+    if (Distance <= DetectionRange)
     {
         // 시야선 체크 (벽이나 장애물 체크)
         FHitResult HitResult;
@@ -83,8 +92,14 @@ bool ABossAIController::CanSeePlayerBoss()
         
         if (bHasLineOfSight)
         {
-#if UE_BUILD_DEBUG
-            UE_LOG(LogTemp, Warning, TEXT("보스가 플레이어를 감지했습니다! 거리: %f"), Distance);
+#if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
+            static float LastLogTime = 0.0f;
+            float CurrentTime = GetWorld()->GetTimeSeconds();
+            if (CurrentTime - LastLogTime > 3.0f)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("보스가 플레이어를 감지했습니다! 거리: %f"), Distance);
+                LastLogTime = CurrentTime;
+            }
 #endif
             return true;
         }
@@ -108,7 +123,15 @@ bool ABossAIController::IsInAttackRange()
 
     if (bInRange)
     {
-        UE_LOG(LogTemp, Warning, TEXT("보스 AI 컨트롤러: 플레이어가 공격 범위 내에 있습니다!"));
+#if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
+        static float LastAttackLogTime = 0.0f;
+        float CurrentTime = GetWorld()->GetTimeSeconds();
+        if (CurrentTime - LastAttackLogTime > 3.0f) 
+        {
+            UE_LOG(LogTemp, Warning, TEXT("보스 AI 컨트롤러: 플레이어가 공격 범위 내에 있습니다!"));
+            LastAttackLogTime = CurrentTime;
+        }
+#endif
     }
 
     return bInRange;
@@ -125,7 +148,10 @@ void ABossAIController::UpdateBossPlayerDetection()
         // 플레이어와의 거리 계산
         float DistanceToPlayer = FVector::Dist(Boss->GetActorLocation(), PlayerPawn->GetActorLocation());
 
-        // 보스 전용 감지 함수 사용
+        // 보스는 항상 2500의 감지 범위를 가짐
+        float DetectionRange = 2500.0f;
+
+        // 플레이어가 보이는지 확인
         bool bCanSeePlayer = CanSeePlayerBoss();
         
         if (bCanSeePlayer)
