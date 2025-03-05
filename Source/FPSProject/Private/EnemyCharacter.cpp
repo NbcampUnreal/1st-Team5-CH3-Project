@@ -476,7 +476,7 @@ void AEnemyCharacter::Attack()
                     }
                 }
             },
-            ActualDuration * 0.5f, // 애니메이션의 50% 지점에서 데미지 계산
+            ActualDuration * 0.3f, // 애니메이션의 50% 지점에서 데미지 계산
             false);
 
         // 실제 재생 시간으로 타이머 설정

@@ -31,7 +31,7 @@ AFPSCharacter::AFPSCharacter()
 
 
     NormalSpeed = 400.0f;
-    SprintSpeedMultiplier = 2.0f;
+    SprintSpeedMultiplier = 1.5f;
     SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
 
     MaxHealth = 100.0f;
