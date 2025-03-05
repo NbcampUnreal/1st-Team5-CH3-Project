@@ -1,5 +1,6 @@
 #include "EnemyCharacter.h"
 #include "FPSCharacter.h"
+#include "BossCharacter.h"
 #include "Animation/AnimInstance.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -21,7 +22,7 @@ AEnemyCharacter::AEnemyCharacter()
     CurrentHealth = MaxHealth;
     AttackDamage = 20.0f;
     AttackRange = 300.0f;    // 공격 범위
-    DetectionRange = 600.0f; // 감지 범위
+    DetectionRange = 800.0f; // 감지 범위
     bIsDead = false;
     bPlayerDetected = false;
     SleepDuration = 0.0f;
@@ -70,6 +71,18 @@ void AEnemyCharacter::BeginPlay()
 {
     Super::BeginPlay();
     CurrentHealth = MaxHealth;
+    
+    if (this->IsA(ABossCharacter::StaticClass()))
+    {
+        DetectionRange = 2500.0f;
+        
+        // 감지 범위 UI 위젯 크기 조정
+        if (DetectionRangeWidgetComp)
+        {
+            DetectionRangeWidgetComp->SetDrawSize(FVector2D(DetectionRange * 2.0f, DetectionRange * 2.0f));
+        }
+    }
+    
     UpdateMovementSpeed(); // 초기 속도 설정
 
     // 무기 애니메이션 인스턴스 확인
@@ -663,6 +676,20 @@ void AEnemyCharacter::UpdateDetectionRangeForPlayerState(AFPSCharacter *Player)
 {
     if (!Player)
         return;
+        
+    // 보스 캐릭터인지 확인
+    if (this->IsA(ABossCharacter::StaticClass()))
+    {
+        float OldDetectionRange = DetectionRange;
+        DetectionRange = 2500.0f;
+        
+        // 감지 범위가 변경되었으면 UI 위젯 크기도 업데이트
+        if (OldDetectionRange != DetectionRange && DetectionRangeWidgetComp)
+        {
+            DetectionRangeWidgetComp->SetDrawSize(FVector2D(DetectionRange * 2.0f, DetectionRange * 2.0f));
+        }
+        return;
+    }
 
     ECharacterState CurrentPlayerState = Player->GetCurrentState();
     float OldDetectionRange = DetectionRange;
@@ -670,11 +697,11 @@ void AEnemyCharacter::UpdateDetectionRangeForPlayerState(AFPSCharacter *Player)
     switch (CurrentPlayerState)
     {
     case ECharacterState::Sprinting:
-        DetectionRange = 900.0f; // 달리기: 기본 범위의 1.5배
+        DetectionRange = BaseDetectionRange * SprintingRangeMultiplier; // 달리기: 기본 범위의 1.5배
         break;
 
     case ECharacterState::Crouching:
-        DetectionRange = 300.0f; // 앉기: 기본 범위의 0.5배
+        DetectionRange = BaseDetectionRange * CrouchingRangeMultiplier; // 앉기: 기본 범위의 0.5배
         break;
 
     case ECharacterState::Dead:
@@ -682,7 +709,7 @@ void AEnemyCharacter::UpdateDetectionRangeForPlayerState(AFPSCharacter *Player)
         break;
 
     default:                     // Normal 상태
-        DetectionRange = 600.0f; // 걷기: 기본 감지 범위
+        DetectionRange = BaseDetectionRange; // 걷기: 기본 감지 범위
         break;
     }
 

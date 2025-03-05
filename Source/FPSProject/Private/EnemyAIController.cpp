@@ -1,5 +1,6 @@
 #include "EnemyAIController.h"
 #include "EnemyCharacter.h"
+#include "BossCharacter.h"
 #include "FPSCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Perception/AIPerceptionSystem.h"
@@ -88,22 +89,32 @@ void AEnemyAIController::UpdatePlayerDetection()
 bool AEnemyAIController::CanSeePlayer()
 {
     APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-    AEnemyCharacter* EnemyChar = Cast<AEnemyCharacter>(GetPawn());
+    AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(GetPawn());
     
-    if (!PlayerPawn || !EnemyChar) return false;
-    
+    if (!PlayerPawn || !Enemy)
+    {
+        return false;
+    }
+
+    // 보스 캐릭터인 경우 감지 범위를 3000으로 설정
+    float DetectionRange = Enemy->GetDetectionRange();
+    if (Enemy->IsA(ABossCharacter::StaticClass()))
+    {
+        DetectionRange = 2000.0f;
+    }
+
     // 거리 계산
-    float Distance = FVector::Dist(EnemyChar->GetActorLocation(), PlayerPawn->GetActorLocation());
+    float Distance = FVector::Dist(Enemy->GetActorLocation(), PlayerPawn->GetActorLocation());
     
     // 감지 범위 내에 있는지 확인 (360도 원형 감지)
-    if (Distance <= EnemyChar->GetDetectionRange())
+    if (Distance <= DetectionRange)
     {
         // 시야선 체크 (벽이나 장애물 체크)
         FHitResult HitResult;
         FCollisionQueryParams QueryParams;
-        QueryParams.AddIgnoredActor(EnemyChar);
+        QueryParams.AddIgnoredActor(Enemy);
         
-        FVector StartLocation = EnemyChar->GetActorLocation();
+        FVector StartLocation = Enemy->GetActorLocation();
         StartLocation.Z += 50.0f;  // 캐릭터 중심부에서 체크하도록 높이 조정
         
         FVector EndLocation = PlayerPawn->GetActorLocation();
