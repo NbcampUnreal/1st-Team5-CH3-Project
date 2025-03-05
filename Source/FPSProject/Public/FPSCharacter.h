@@ -12,6 +12,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 struct FInputActionValue;
+class AWeapon;
 
 // AI 감지 시스템을 위한 캐릭터 상태 정의
 UENUM(BlueprintType)
@@ -118,6 +119,9 @@ public:
 	void Fire();
 	// 재장전
 	void Reload();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	AWeapon* GetCurrentWeapon() const;
 
 protected:
 
