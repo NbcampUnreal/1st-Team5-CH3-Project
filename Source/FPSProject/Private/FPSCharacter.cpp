@@ -14,6 +14,12 @@ AFPSCharacter::AFPSCharacter()
 {
     GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
+    WalkAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("WalkAudioComponent"));
+    WalkAudioComponent->SetupAttachment(GetRootComponent());
+    WalkAudioComponent->bAutoActivate = false;  // 자동 실행 방지
+    
+
+
     PrimaryActorTick.bCanEverTick = false;
 
     FirePosition = CreateDefaultSubobject<UArrowComponent>(TEXT("FirePosition"));
@@ -63,7 +69,8 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
         {
             if (PlayerController->MoveAction)
             {
-                EnhancedInput->BindAction(PlayerController->MoveAction, ETriggerEvent::Triggered, this, &AFPSCharacter::Move);
+                EnhancedInput->BindAction(PlayerController->MoveAction, ETriggerEvent::Triggered, this, &AFPSCharacter::StartMove);
+                EnhancedInput->BindAction(PlayerController->MoveAction, ETriggerEvent::Completed, this, &AFPSCharacter::StopMove);
             }
             if (PlayerController->JumpAction)
             {
@@ -165,11 +172,17 @@ void AFPSCharacter::SetHealth(float Amount)
     Health = Amount;
 }
 
-void AFPSCharacter::Move(const FInputActionValue& value)
+void AFPSCharacter::StartMove(const FInputActionValue& value)
 {
     if (!Controller) return;
 
     const FVector2D MoveInput = value.Get<FVector2D>();
+    float Speed = GetCharacterMovement()->Velocity.Size(); // 현재 속도 가져오기
+    if (Speed > 10.0f)  // 걷기 시작할 때
+    {
+        StartWalkSound();
+    }
+    
 
     if (!FMath::IsNearlyZero(MoveInput.X))
     {
@@ -181,6 +194,38 @@ void AFPSCharacter::Move(const FInputActionValue& value)
         AddMovementInput(GetActorRightVector(), MoveInput.Y);
     }
 }
+
+void AFPSCharacter::StopMove(const FInputActionValue& value)
+{
+    StopWalkSound();
+}
+
+void AFPSCharacter::StartWalkSound()
+{
+    if (WalkSound && WalkAudioComponent)
+    {
+        
+        if (!WalkAudioComponent->IsPlaying()) // 이미 재생 중이면 다시 재생하지 않음
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Walk Sound start"));
+            WalkAudioComponent->SetSound(WalkSound);
+            WalkAudioComponent->Play();
+        }
+    }
+}
+
+
+void AFPSCharacter::StopWalkSound()
+{
+    if (WalkAudioComponent && WalkAudioComponent->IsPlaying())
+    {
+        WalkAudioComponent->Stop();
+    }
+}
+
+
+
+
 
 void AFPSCharacter::StartJump(const FInputActionValue& value)
 {
