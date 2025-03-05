@@ -670,3 +670,7 @@ void AFPSCharacter::Reload()
         UE_LOG(LogTemp, Warning, TEXT("장착된 무기가 없습니다!"));
     }
 }
+AWeapon* AFPSCharacter::GetCurrentWeapon() const
+{
+    return CurrentWeapon; // 현재 장착된 무기 반환
+}
