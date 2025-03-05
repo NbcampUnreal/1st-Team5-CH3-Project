@@ -204,7 +204,7 @@ void AFPSPlayerController::ShowGameOverScreen()
 
 void AFPSPlayerController::ShowMission()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Show Mission 호출됨"));
+
     MissionWidgetInstance = CreateWidget<UUserWidget>(this, MissionWidgetClass);
     if (MissionWidgetInstance)
     {
