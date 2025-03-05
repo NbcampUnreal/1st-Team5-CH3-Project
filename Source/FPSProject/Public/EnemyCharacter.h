@@ -100,10 +100,10 @@ protected:
     UAnimMontage *DeathMontage;
 
     UPROPERTY(EditAnywhere, Category = "AI|Movement")
-    float PatrolSpeed = 200.0f;
+    float PatrolSpeed = 350.0f;
 
     UPROPERTY(EditAnywhere, Category = "AI|Movement")
-    float ChaseSpeed = 400.0f;
+    float ChaseSpeed = 700.0f;
 
     // 히트 이펙트
     UPROPERTY(EditDefaultsOnly, Category = "Combat")
@@ -149,7 +149,7 @@ protected:
 
     // 헤더에 상태별 감지 범위 수정자 추가
     UPROPERTY(EditAnywhere, Category = "AI|Detection")
-    float BaseDetectionRange = 600.0f; // 기존 DetectionRange 값을 기본값으로
+    float BaseDetectionRange = 800.0f;
 
     UPROPERTY(EditAnywhere, Category = "AI|Detection")
     float SprintingRangeMultiplier = 1.5f;
