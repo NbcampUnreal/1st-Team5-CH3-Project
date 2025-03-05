@@ -44,6 +44,8 @@ private:
 	// 발소리 재생 관련 함수 선언
 	void StartWalkSound();
 	void StopWalkSound();
+	void StartSprintSound();
+	void StopSprintSound();
 
 	FTimerHandle DeathTimerHandle;
 
@@ -156,8 +158,14 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Sound")
 	USoundBase* WalkSound;
 
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	USoundBase* SprintSound;
+
 	UPROPERTY()
 	UAudioComponent* WalkAudioComponent = nullptr;
+
+	UPROPERTY()
+	UAudioComponent* SprintAudioComponent = nullptr;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
