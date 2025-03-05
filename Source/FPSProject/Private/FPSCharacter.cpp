@@ -178,7 +178,7 @@ void AFPSCharacter::StartMove(const FInputActionValue& value)
 
     const FVector2D MoveInput = value.Get<FVector2D>();
     float Speed = GetCharacterMovement()->Velocity.Size(); // 현재 속도 가져오기
-    if (Speed > 10.0f)  // 걷기 시작할 때
+    if (Speed > 380.0f)  // 걷기 시작할 때
     {
         StartWalkSound();
     }
@@ -430,15 +430,28 @@ void AFPSCharacter::SelectWeapon2()
 void AFPSCharacter::StartCrouch(const FInputActionValue& Value)
 {
     UE_LOG(LogTemp, Warning, TEXT("Crouch Start Pressed!"));
-
+    
     if (GetCharacterMovement() && !bIsCrouched)
     {
         UE_LOG(LogTemp, Warning, TEXT("Crouch Started!"));
 
         // 크라우치 시작
         Crouch();
+        
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed * 0.5f;
+        float Speed = GetCharacterMovement()->Velocity.Size();
+        UE_LOG(LogTemp, Warning, TEXT("Crouch Stopped! Speed: %f"), Speed);
+
         SetCharacterState(ECharacterState::Crouching);     // AI 감지용 상태 변경
+
+        FTimerHandle TimerHandle_StopWalkSound;
+        GetWorld()->GetTimerManager().SetTimer(
+            TimerHandle_StopWalkSound,
+            this,
+            &AFPSCharacter::StopWalkSound, // 0.1초 후 실행할 함수
+            0.1f,
+            false // 반복 실행 여부 (false: 한 번만 실행)
+        );
     }
 }
 
