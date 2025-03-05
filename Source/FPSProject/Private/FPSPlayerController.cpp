@@ -182,7 +182,7 @@ void AFPSPlayerController::ShowGameOverScreen()
                 if (BasicGameInstance)
                 {
                     SleepCountText->SetText(FText::FromString(
-                        FString::Printf(TEXT("잠재운 적 수 : %d"), BasicGameInstance->TotalKillCount)
+                        FString::Printf(TEXT("잠재운 적 수 : %d"), BasicGameInstance->TotalSleepCount)
                     ));
                 }
             }
