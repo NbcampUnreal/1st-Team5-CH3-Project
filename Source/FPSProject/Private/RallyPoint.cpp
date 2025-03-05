@@ -1,7 +1,9 @@
 #include "RallyPoint.h"
 #include "BasicGameState.h"
+#include "BasicGameInstance.h"
 #include "Components/BoxComponent.h"
 #include "FPSCharacter.h"
+#include "FPSPlayerController.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -40,18 +42,42 @@ void ARallyPoint::OnOverlapBegin(
 {
 	if (OtherActor && OtherActor->IsA(AFPSCharacter::StaticClass()))
 	{
-		UE_LOG(LogTemp, Log, TEXT("플레이어가 랠리포인트를 통과함!"));
+
+
 
 		if (ABasicGameState* BasicGameState = GetWorld()->GetGameState<ABasicGameState>())
 		{
-			BasicGameState->SetGamePhase(NextPhase);
-			if (GEngine)
-			{ 
-				FString PhaseMessage = FString::Printf(TEXT("Phase Changed: %s"), *UEnum::GetValueAsString(BasicGameState->CurrentPhase));
-				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, PhaseMessage);
+			if (UBasicGameInstance* BasicGameInstance = Cast<UBasicGameInstance>(UGameplayStatics::GetGameInstance(this)))
+			{
+				//게임 진행이 안됐을 경우
+				if (!BasicGameInstance->bIsDocumentDestroyed)
+				{
+					//gameOver 영역에 들어갔을 때
+					if (NextPhase == EGamePhase::GameOver)
+					{
+						// 걸렸을 때 UI 띄우기 + 게임 오버
+						BasicGameState->OnGameOver();
+
+						return;
+					}
+					else if(NextPhase == EGamePhase::Combat)
+					{
+						//그냥 통과
+						return;
+					}
+				}
+				else
+				{
+					if (NextPhase == EGamePhase::GameOver)
+					{
+						//아무일도 x
+						return;
+					}
+
+
+				}
+				BasicGameState->SetGamePhase(NextPhase);
 			}
-
-
 		}
 
 		Destroy();

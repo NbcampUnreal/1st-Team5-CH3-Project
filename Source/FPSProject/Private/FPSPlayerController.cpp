@@ -22,12 +22,15 @@ AFPSPlayerController::AFPSPlayerController()
     SelectWeapon2Action(nullptr),
     FireAction(nullptr),
     ReloadAction(nullptr),
+    HoldAnyKeyAction(nullptr),
     HUDWidgetClass(nullptr),
     HUDWidgetInstance(nullptr),
     MainMenuWidgetClass(nullptr),
     MainMenuWidgetInstance(nullptr),
     GameOverWidgetClass(nullptr),
-    GameOverWidgetInstance(nullptr)
+    GameOverWidgetInstance(nullptr),
+    IsPaused(false),
+    bMissionActive(false)
 {
 }
 
@@ -64,6 +67,7 @@ void AFPSPlayerController::SetupInputComponent()
     // ESC 키를 누르면 일시 정지
     UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent);
     EnhancedInput->BindAction(PauseAction, ETriggerEvent::Started, this, &AFPSPlayerController::TogglePauseMenu);
+    EnhancedInput->BindAction(HoldAnyKeyAction, ETriggerEvent::Started, this, &AFPSPlayerController::HideMission);
 }
 
 UUserWidget* AFPSPlayerController::GetHUDWidget() const
@@ -195,6 +199,102 @@ void AFPSPlayerController::ShowGameOverScreen()
                 }
             }
         }
+    }
+}
+
+void AFPSPlayerController::ShowMission()
+{
+    UE_LOG(LogTemp, Warning, TEXT("Show Mission 호출됨"));
+    MissionWidgetInstance = CreateWidget<UUserWidget>(this, MissionWidgetClass);
+    if (MissionWidgetInstance)
+    {
+        FInputModeGameAndUI InputMode;
+        InputMode.SetWidgetToFocus(MissionWidgetInstance->TakeWidget()); // UI 포커스 유지
+        SetInputMode(InputMode);
+        bShowMouseCursor = true;
+
+        MissionWidgetInstance->AddToViewport();
+        //Text Settings
+        FString DisplayText1;
+        FString DisplayText2;
+        FString DisplayText3;
+        FString DisplayText4;
+        FString DisplayText5;
+        ABasicGameState* BasicGameState = Cast<ABasicGameState>(UGameplayStatics::GetGameState(this));
+        if (BasicGameState)
+        {
+            switch (BasicGameState->CurrentPhase)
+            {
+                case EGamePhase::Tutorial:
+                    DisplayText1 = TEXT("밤이 깊었다. 관아의 경비가 조금씩 느슨해지고 있어.");
+                    DisplayText2 = TEXT("이 집에는 백성들의 피와 땀을 착취하는 문서들이 잔뜩 있다지.");
+                    DisplayText3 = TEXT("어서 잡입해보자.");
+                    DisplayText4 = TEXT("");
+                    DisplayText5 = TEXT("");
+                    break;
+                case EGamePhase::Stealth:
+                    DisplayText1 = TEXT("무언가 수상해.왜 이렇게 많은 포졸들이 지키고 있는거지?");
+                    DisplayText2 = TEXT("역시 무언가 수상해.");
+                    DisplayText3 = TEXT("들키지 않게 들어가서 바로 왼쪽 뒷길을 이용하여 잡입해보자");
+                    DisplayText4 = TEXT("");
+                    DisplayText5 = TEXT("");
+                    break;
+                case EGamePhase::Combat:
+                    DisplayText1 = TEXT("경비병 : 침입자가 나타났다!!");
+                    DisplayText2 = TEXT("경비병 : 침입자를 처단하라!!");
+                    DisplayText3 = TEXT("");
+                    DisplayText4 = TEXT("");
+                    DisplayText5 = TEXT("");
+                    break;
+                case EGamePhase::GameOver:
+                    DisplayText1 = TEXT("경비병 : 네 이놈 여기가 어디라고 들어오느냐!!");
+                    DisplayText2 = TEXT("경비병 : 사람 구실을 못하게 만들어줘야겠다");
+                    DisplayText3 = TEXT("");
+                    DisplayText4 = TEXT("");
+                    DisplayText5 = TEXT("");
+                    break;
+                case EGamePhase::GameClear:
+                    DisplayText1 = TEXT("미션 성공");
+                    DisplayText2 = TEXT("");
+                    DisplayText3 = TEXT("");
+                    DisplayText4 = TEXT("");
+                    DisplayText5 = TEXT("");
+                    break;
+            }
+        }
+
+        UTextBlock* MissionTextBlock1 = Cast<UTextBlock>(MissionWidgetInstance->GetWidgetFromName(TEXT("MissionText1")));
+        UTextBlock* MissionTextBlock2 = Cast<UTextBlock>(MissionWidgetInstance->GetWidgetFromName(TEXT("MissionText2")));
+        UTextBlock* MissionTextBlock3 = Cast<UTextBlock>(MissionWidgetInstance->GetWidgetFromName(TEXT("MissionText3")));
+        UTextBlock* MissionTextBlock4 = Cast<UTextBlock>(MissionWidgetInstance->GetWidgetFromName(TEXT("MissionText4")));
+        UTextBlock* MissionTextBlock5 = Cast<UTextBlock>(MissionWidgetInstance->GetWidgetFromName(TEXT("MissionText5")));
+        MissionTextBlock1->SetText(FText::FromString(DisplayText1));
+        MissionTextBlock2->SetText(FText::FromString(DisplayText2));
+        MissionTextBlock3->SetText(FText::FromString(DisplayText3));
+        MissionTextBlock4->SetText(FText::FromString(DisplayText4));
+        MissionTextBlock5->SetText(FText::FromString(DisplayText5));
+        UFunction* PlayAnimFunc = MissionWidgetInstance->FindFunction(FName("PlayTextAnim"));
+        if (PlayAnimFunc)
+        {
+            MissionWidgetInstance->ProcessEvent(PlayAnimFunc, nullptr);
+        }
+    }
+    bMissionActive = true;
+
+}
+
+void AFPSPlayerController::HideMission()
+{
+    if (bMissionActive && MissionWidgetInstance)
+    {
+        MissionWidgetInstance->RemoveFromParent();
+        MissionWidgetInstance = nullptr;
+
+        SetPause(false);
+        SetInputMode(FInputModeGameOnly());
+        bShowMouseCursor = false;
+
+        bMissionActive = false;
     }
 }
 

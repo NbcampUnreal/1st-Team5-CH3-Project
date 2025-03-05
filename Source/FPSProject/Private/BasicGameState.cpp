@@ -18,7 +18,7 @@ ABasicGameState::ABasicGameState()
     bIsPause = false;
 
     PrimaryActorTick.bCanEverTick = true;
-    CurrentMissionText = TEXT("미션 : 잠은 죽어서 자자");
+    CurrentMissionText = TEXT("미션 : ");
 }
 
 void ABasicGameState::BeginPlay()
@@ -28,6 +28,7 @@ void ABasicGameState::BeginPlay()
     
     GetFPSPlayerController()->ShowGameHUD();
     UpdateHUD();
+    StartTutorialPhase();
 }
 
 void ABasicGameState::Tick(float DeltaTime)
@@ -70,28 +71,6 @@ void ABasicGameState::OnGameOver()
     }
 }
 
-void ABasicGameState::SetGamePhase(EGamePhase NewPhase)
-{
-    if (CurrentPhase == NewPhase) return; 
-
-    CurrentPhase = NewPhase;
-    UE_LOG(LogTemp, Warning, TEXT("Game Phase changed to: %d"), (uint8)CurrentPhase);
-
-    switch (CurrentPhase)
-    {
-    case EGamePhase::Stealth:
-        break;
-
-    case EGamePhase::Combat:
-        break;
-
-    case EGamePhase::Escape:
-        break;
-
-    case EGamePhase::GameOver:
-        break;
-    }
-}
 
 void ABasicGameState::UpdateHUD()
 {
@@ -268,16 +247,44 @@ FString ABasicGameState::GetAmmoCount()
     return FString(TEXT("0 / 0"));
 }
 
+void ABasicGameState::SetGamePhase(EGamePhase NewPhase)
+{
+    if (CurrentPhase == NewPhase) return;
+
+    CurrentPhase = NewPhase;
+
+    switch (CurrentPhase)
+    {
+    case EGamePhase::Stealth:
+        StartStealthPhase();
+        break;
+    case EGamePhase::Combat:
+        StartCombatPhase();
+        break;
+    case EGamePhase::GameOver:
+        break;
+    }
+}
+
+void ABasicGameState::StartTutorialPhase()
+{
+    CurrentMissionText = TEXT("가옥에 잡입하기");
+    GetFPSPlayerController()->ShowMission();
+    UpdateMissionHUD();
+}
+
 void ABasicGameState::StartStealthPhase()
 {
-    CurrentPhase = EGamePhase::Stealth;
-
-
+    CurrentMissionText = TEXT("들키지 않고 안채 깊숙한 곳에서 중요한 문서를 찾기");
+    GetFPSPlayerController()->ShowMission();
+    UpdateMissionHUD();
 }
 
 void ABasicGameState::StartCombatPhase()
 {
-    CurrentPhase = EGamePhase::Combat;
+    CurrentMissionText = TEXT("가옥을 탈출하기");
+    GetFPSPlayerController()->ShowMission();
+    UpdateMissionHUD();
 }
 
 

@@ -15,7 +15,7 @@ public:
     int32 TotalKillCount = 0;  
     float TotalPlayTime = 0.f;
     UPROPERTY(BlueprintReadOnly, Category = "Objective")
-    bool bDocumentBurned = false; 
+    bool bIsDocumentDestroyed = false; 
 
     void AddScore(int Amount) { TotalScore += Amount; }
     void AddKill() { TotalKillCount++; }
