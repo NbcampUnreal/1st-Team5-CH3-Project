@@ -11,7 +11,9 @@ AWeapon::AWeapon()
 
 	RemainingTotalAmmo = 20;
 	MaxAmmo = 10;
-	CurrentAmmo = MaxAmmo;
+	CurrentAmmo = MaxAmmo; 
+
+	bIsReloading = false;
 }
 
 void AWeapon::BeginPlay()
@@ -22,34 +24,37 @@ void AWeapon::BeginPlay()
 
 void AWeapon::Fire()
 {
-
-	if (CurrentAmmo > 0)
+	if (!bIsReloading)
 	{
-		if (FireSound)
+		if (CurrentAmmo > 0)
 		{
-			UGameplayStatics::PlaySoundAtLocation(
-				GetWorld(),
-				FireSound,
-				GetActorLocation()
-			);
+			if (FireSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					GetWorld(),
+					FireSound,
+					GetActorLocation()
+				);
+			}
+			CurrentAmmo--;
 		}
-		CurrentAmmo--;
-	}
-	else
-	{
-		if (DryFireSound)
+		else
 		{
-			UGameplayStatics::PlaySoundAtLocation(
-				GetWorld(),
-				DryFireSound,
-				GetActorLocation()
-			);
+			if (DryFireSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					GetWorld(),
+					DryFireSound,
+					GetActorLocation()
+				);
+			}
 		}
 	}
 }
 
 void AWeapon::Reload()
 {
+	bIsReloading = true;
 	if (ReloadSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(
@@ -79,6 +84,8 @@ void AWeapon::ReloadAmmo()
 	{
 		BasicGameState->UpdateAmmoHUD();
 	}
+
+	bIsReloading = false;
 }
 
 void AWeapon::Equip()

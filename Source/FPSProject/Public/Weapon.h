@@ -49,6 +49,9 @@ protected:
 
 	FTimerHandle ReloadTimerHandle;
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reload")
+	bool bIsReloading;
+
 	//getter
 	UFUNCTION(BlueprintCallable)
 	int32 GetMaxAmmo() { return MaxAmmo; } const
