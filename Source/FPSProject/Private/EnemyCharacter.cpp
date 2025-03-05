@@ -349,13 +349,13 @@ void AEnemyCharacter::Die()
     bIsDead = true;
 
     // 킬 카운트 증가
-    if (UGameInstance *GameInstance = UGameplayStatics::GetGameInstance(GetWorld()))
+    if (UGameInstance *GameInstance = UGameplayStatics::GetGameInstance(UGameplayStatics::GetGameInstance(this)))
     {
         if (UBasicGameInstance *BasicGameInstance = Cast<UBasicGameInstance>(GameInstance))
         {
             BasicGameInstance->AddKill(); // 킬 카운트만 증가
             BasicGameInstance->AddScore(300);
-            UE_LOG(LogTemp, Warning, TEXT("Enemy died! Kill Count: %d"), BasicGameInstance->TotalKillCount);
+
         }
     }
 
@@ -620,7 +620,6 @@ void AEnemyCharacter::Sleep(float Duration)
     if (SleepStateWidgetComp)
     {
         SleepStateWidgetComp->SetVisibility(true);
-        UE_LOG(LogTemp, Warning, TEXT("수면 UI 활성화, 지속 시간: %.1f초"), Duration);
     }
 
     // AI 이동 중지
@@ -633,7 +632,7 @@ void AEnemyCharacter::Sleep(float Duration)
     }
 
     // 게임 인스턴스에 수면 카운트 증가
-    if (UBasicGameInstance *GameInstance = Cast<UBasicGameInstance>(GetWorld()->GetGameInstance()))
+    if (UBasicGameInstance *GameInstance = Cast<UBasicGameInstance>(UGameplayStatics::GetGameInstance(this)))
     {
         GameInstance->AddSleep();
     }
@@ -645,12 +644,12 @@ void AEnemyCharacter::Sleep(float Duration)
         &AEnemyCharacter::WakeUp,
         Duration,
         false);
-
-    UE_LOG(LogTemp, Warning, TEXT("Enemy is now sleeping for %f seconds"), Duration);
+;
 }
 
 void AEnemyCharacter::WakeUp()
 {
+    UE_LOG(LogTemp, Warning, TEXT("깨어남"));
     if (bIsDead)
         return;
 

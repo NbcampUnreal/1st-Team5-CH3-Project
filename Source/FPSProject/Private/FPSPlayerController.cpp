@@ -96,11 +96,9 @@ void AFPSPlayerController::ShowGameHUD()
             bShowMouseCursor = false;
             SetInputMode(FInputModeGameOnly());
         }
-        UE_LOG(LogTemp, Warning, TEXT("Create WidgetInstance"));
         ABasicGameState* BasicGameState = GetWorld() ? GetWorld()->GetGameState<ABasicGameState>() : nullptr;
         if (BasicGameState) {
             BasicGameState->UpdateHUD();
-            UE_LOG(LogTemp, Warning, TEXT("UpdateHUD "));
         }
     }
 }
@@ -182,7 +180,7 @@ void AFPSPlayerController::ShowGameOverScreen()
                 if (BasicGameInstance)
                 {
                     SleepCountText->SetText(FText::FromString(
-                        FString::Printf(TEXT("잠재운 적 수 : %d"), BasicGameInstance->TotalKillCount)
+                        FString::Printf(TEXT("잠재운 적 수 : %d"), BasicGameInstance->TotalSleepCount)
                     ));
                 }
             }
