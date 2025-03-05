@@ -128,8 +128,6 @@ void AEnemyCharacter::BeginPlay()
             }
         }
     }
-
-    Sleep(5.0f);
 }
 
 // Tick 함수 구현
