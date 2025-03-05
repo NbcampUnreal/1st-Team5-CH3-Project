@@ -1,11 +1,12 @@
 #include "BulletItem.h"
 #include "FPSCharacter.h"
+#include "BasicGameState.h"
 #include "Weapon.h"
 #include "Kismet/GameplayStatics.h"
 
 ABulletItem::ABulletItem()
 {
-	ItemType = "Bullet"; // ¾ÆÀÌÅÛ Å¸ÀÔ ¼³Á¤
+	ItemType = "Bullet"; 
 }
 
 void ABulletItem::ActivateItem(AActor* Activator)
@@ -13,16 +14,18 @@ void ABulletItem::ActivateItem(AActor* Activator)
 	AFPSCharacter* Player = Cast<AFPSCharacter>(Activator);
 	if (Player)
 	{
-		AWeapon* CurrentWeapon = Player->GetCurrentWeapon(); // ÇöÀç ¹«±â °¡Á®¿À±â
+		AWeapon* CurrentWeapon = Player->GetCurrentWeapon(); 
 		if (CurrentWeapon)
 		{
-			CurrentWeapon->SetRemainingTotalAmmo(CurrentWeapon->GetTotalAmmo() + AmmoAmount); // ÃÑ¾Ë Áõ°¡
-			UE_LOG(LogTemp, Log, TEXT("Bullet Item Used: %d Ammo Added"), AmmoAmount);
+			CurrentWeapon->SetRemainingTotalAmmo(CurrentWeapon->GetTotalAmmo() + AmmoAmount); // ï¿½Ñ¾ï¿½ ï¿½ï¿½ï¿½ï¿½
+		}
+		// HUD Update
+		ABasicGameState* BasicGameState = Cast<ABasicGameState>(UGameplayStatics::GetGameState(this));
+		if (BasicGameState)
+		{
+			BasicGameState->UpdateAmmoHUD();
 		}
 	}
 
-	
-
-	// ¾ÆÀÌÅÛ Á¦°Å
 	DestroyItem();
 }

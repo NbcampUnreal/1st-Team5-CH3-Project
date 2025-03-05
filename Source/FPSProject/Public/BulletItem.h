@@ -16,7 +16,6 @@ protected:
 	virtual void ActivateItem(AActor* Activator) override;
 
 private:
-	// 아이템이 증가시킬 총알 개수
 	UPROPERTY(EditAnywhere, Category = "Bullet")
 	int32 AmmoAmount = 10;
 };

@@ -67,7 +67,7 @@ void AFPSPlayerController::SetupInputComponent()
     // ESC 키를 누르면 일시 정지
     UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent);
     EnhancedInput->BindAction(PauseAction, ETriggerEvent::Started, this, &AFPSPlayerController::TogglePauseMenu);
-    EnhancedInput->BindAction(HoldAnyKeyAction, ETriggerEvent::Started, this, &AFPSPlayerController::HideMission);
+    EnhancedInput->BindAction(HoldAnyKeyAction, ETriggerEvent::Triggered, this, &AFPSPlayerController::HideMission);
 }
 
 UUserWidget* AFPSPlayerController::GetHUDWidget() const

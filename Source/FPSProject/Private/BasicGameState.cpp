@@ -276,12 +276,30 @@ void ABasicGameState::StartTutorialPhase()
 void ABasicGameState::StartStealthPhase()
 {
     CurrentMissionText = TEXT("들키지 않고 안채 깊숙한 곳에서 중요한 문서를 찾기");
-    GetFPSPlayerController()->ShowMission();
+    if (AFPSPlayerController* FPSPlayerController = GetFPSPlayerController())
+    {
+        FPSPlayerController->ShowMission();
+        if (AFPSCharacter* FPSCharacter = Cast<AFPSCharacter>(GetFPSPlayerController()->GetPawn()))
+        {
+            FPSCharacter->SetMaxHealth(20.f);
+            FPSCharacter->SetHealth(20.f);
+        }
+    }
     UpdateMissionHUD();
 }
 
 void ABasicGameState::StartCombatPhase()
 {
+    if (AFPSPlayerController* FPSPlayerController = GetFPSPlayerController())
+    {
+        FPSPlayerController->ShowMission();
+        if (AFPSCharacter* FPSCharacter = Cast<AFPSCharacter>(GetFPSPlayerController()->GetPawn()))
+        {
+            FPSCharacter->SetMaxHealth(200.f);
+            FPSCharacter->SetHealth(200.f);
+        }
+    }
+
     CurrentMissionText = TEXT("가옥을 탈출하기");
     GetFPSPlayerController()->ShowMission();
     UpdateMissionHUD();
