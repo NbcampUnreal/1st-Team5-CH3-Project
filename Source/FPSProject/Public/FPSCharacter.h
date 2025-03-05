@@ -6,6 +6,7 @@
 #include "Weapon.h" 
 #include "EnhancedInputComponent.h" 
 #include "EnhancedInputSubsystems.h" 
+#include "Components/AudioComponent.h"
 #include "FPSCharacter.generated.h"
 
 class USpringArmComponent;
@@ -37,6 +38,12 @@ private:
 	float Health;
 
 	bool bIsAlive = true;
+
+	bool bIsMoving = false;
+
+	// 발소리 재생 관련 함수 선언
+	void StartWalkSound();
+	void StopWalkSound();
 
 	FTimerHandle DeathTimerHandle;
 
@@ -146,10 +153,19 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Sound")
 	USoundBase* HurtSound;
 
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	USoundBase* WalkSound;
+
+	UPROPERTY()
+	UAudioComponent* WalkAudioComponent = nullptr;
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION()
-	void Move(const FInputActionValue& value);
+	void StartMove(const FInputActionValue& value);
+
+	UFUNCTION()
+	void StopMove(const FInputActionValue& value);
 
 	UFUNCTION()
 	void StartJump(const FInputActionValue& value);
