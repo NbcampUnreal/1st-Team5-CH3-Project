@@ -45,6 +45,26 @@ public:
     // 특수 공격의 각 단계를 실행하는 헬퍼 함수
     void ExecuteSpecialAttack(AActor* Player, int32 AttackIndex, int32 TotalAttacks, float SpecialPlayRate, float SpecialDamage);
 
+    // 감지 기능 활성화/비활성화 함수
+    UFUNCTION(BlueprintCallable, Category = "Boss|Detection")
+    void SetDetectionEnabled(bool bEnabled);
+
+    // 감지 UI 표시/숨김 함수
+    UFUNCTION(BlueprintCallable, Category = "Boss|Detection")
+    void SetDetectionUIVisible(bool bVisible);
+
+    // 감지 기능 상태 확인 함수
+    UFUNCTION(BlueprintPure, Category = "Boss|Detection")
+    bool IsDetectionEnabled() const { return bDetectionEnabled; }
+
+    // 순찰 모드 설정 함수
+    UFUNCTION(BlueprintCallable, Category = "Boss|AI")
+    void SetPatrolMode(bool bEnabled);
+
+    // 순찰 모드 상태 확인 함수
+    UFUNCTION(BlueprintPure, Category = "Boss|AI")
+    bool IsInPatrolMode() const { return bPatrolMode; }
+
 private:
     // 보스 스케일 - 기본 Enemy보다 크기
     UPROPERTY(EditDefaultsOnly, Category = "Boss|Appearance")
@@ -57,4 +77,12 @@ private:
     // 이동 속도 배율 - 기본 Enemy보다 빠름
     UPROPERTY(EditDefaultsOnly, Category = "Boss|Movement")
     float MovementSpeedMultiplier;
+
+    // 감지 기능 활성화 여부
+    UPROPERTY(EditAnywhere, Category = "Boss|Detection")
+    bool bDetectionEnabled;
+
+    // 순찰 모드 여부
+    UPROPERTY(EditAnywhere, Category = "Boss|AI")
+    bool bPatrolMode;
 };
