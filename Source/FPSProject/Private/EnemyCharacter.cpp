@@ -409,7 +409,7 @@ void AEnemyCharacter::Die()
 
 void AEnemyCharacter::Attack()
 {
-    if (bIsDead || !bCanAttack)
+    if (bIsDead || !bCanAttack || bIsSleeping)
         return;
 
     // 현재 피격 애니메이션이 재생 중인지 확인
@@ -491,7 +491,7 @@ void AEnemyCharacter::Attack()
                     }
                 }
             },
-            ActualDuration * 0.3f, // 애니메이션의 50% 지점에서 데미지 계산
+            ActualDuration * 0.2f, // 애니메이션의 20% 지점에서 데미지 계산
             false);
 
         // 실제 재생 시간으로 타이머 설정
@@ -622,6 +622,34 @@ void AEnemyCharacter::Sleep(float Duration)
         SleepStateWidgetComp->SetVisibility(true);
     }
 
+    // 진행 중인 공격 애니메이션 중지
+    UAnimInstance *AnimInstance = GetMesh()->GetAnimInstance();
+    if (AnimInstance)
+    {
+        // 공격 애니메이션 중지
+        if (AttackMontage && AnimInstance->Montage_IsPlaying(AttackMontage))
+        {
+            AnimInstance->Montage_Stop(0.1f, AttackMontage);
+            UE_LOG(LogTemp, Warning, TEXT("수면 상태: 공격 애니메이션 중지"));
+        }
+        
+        // 무기 애니메이션 중지
+        if (WeaponAttackMontage && WeaponMesh)
+        {
+            UAnimInstance *WeaponAnimInstance = WeaponMesh->GetAnimInstance();
+            if (WeaponAnimInstance && WeaponAnimInstance->Montage_IsPlaying(WeaponAttackMontage))
+            {
+                WeaponAnimInstance->Montage_Stop(0.1f, WeaponAttackMontage);
+                UE_LOG(LogTemp, Warning, TEXT("수면 상태: 무기 애니메이션 중지"));
+            }
+        }
+    }
+
+    // 공격 관련 타이머 초기화
+    GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+    GetWorld()->GetTimerManager().ClearTimer(AttackCooldownTimer);
+    bCanAttack = false; // 수면 상태에서는 공격 불가
+
     // AI 이동 중지
     GetCharacterMovement()->StopMovementImmediately();
 
@@ -644,7 +672,6 @@ void AEnemyCharacter::Sleep(float Duration)
         &AEnemyCharacter::WakeUp,
         Duration,
         false);
-;
 }
 
 void AEnemyCharacter::WakeUp()
@@ -662,6 +689,14 @@ void AEnemyCharacter::WakeUp()
         SleepStateWidgetComp->SetVisibility(false);
         UE_LOG(LogTemp, Warning, TEXT("수면 UI 비활성화"));
     }
+
+    // 공격 가능 상태 복원 (일정 시간 후)
+    GetWorld()->GetTimerManager().SetTimer(
+        AttackCooldownTimer,
+        [this]()
+        { bCanAttack = true; },
+        AttackCooldown * 0.5f, // 깨어난 후 짧은 쿨다운
+        false);
 
     // AI 컨트롤러 다시 활성화
     if (AEnemyAIController *AIController = Cast<AEnemyAIController>(GetController()))
