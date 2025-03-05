@@ -110,7 +110,17 @@ void ABasicGameState::UpdateHUD()
                 HPBar->SetPercent(HPPercent);
             }
 
+            //Crosshair
+            if (UImage* CrosshairImage = Cast<UImage>(HUDWidget->GetWidgetFromName(TEXT("CrosshairImage"))))
+            {
+                FString AssetPath = "/Game/Image/sniper-297661.sniper-297661";
+                UTexture2D* LoadedTexture = LoadObject<UTexture2D>(nullptr, *AssetPath);
+                if (LoadedTexture)
+                {
+                    CrosshairImage->SetBrushFromTexture(LoadedTexture);
+                }
 
+            }
 
             //Mission Text
             if (UTextBlock* MissionText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("MissionText"))))
