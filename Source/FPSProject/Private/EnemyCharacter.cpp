@@ -663,7 +663,9 @@ void AEnemyCharacter::Sleep(float Duration)
     if (UBasicGameInstance *GameInstance = Cast<UBasicGameInstance>(UGameplayStatics::GetGameInstance(this)))
     {
         GameInstance->AddSleep();
+        GameInstance->AddScore(500);
     }
+    
 
     // 지정된 시간 후에 깨어나기
     GetWorld()->GetTimerManager().SetTimer(

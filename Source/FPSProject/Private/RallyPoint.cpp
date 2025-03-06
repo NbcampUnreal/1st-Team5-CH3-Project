@@ -6,6 +6,7 @@
 #include "FPSPlayerController.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "BossSpawner.h"
 
 ARallyPoint::ARallyPoint()
 {
@@ -69,10 +70,10 @@ void ARallyPoint::OnOverlapBegin(
 				{
 					if (NextPhase == EGamePhase::GameOver)
 					{
-						//아무일도 x
+						// Spawn Boss
+						BasicGameState->SetGamePhase(EGamePhase::Boss);
 						return;
 					}
-
 
 				}
 				BasicGameState->SetGamePhase(NextPhase);

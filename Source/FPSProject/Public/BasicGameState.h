@@ -14,7 +14,8 @@ enum class EGamePhase : uint8
 {
 	Tutorial UMETA(DisplayName = "Tutorial"),
 	Stealth UMETA(DisplayName = "Stealth"),  
-	Combat UMETA(DisplayName = "Combat"),      
+	Combat UMETA(DisplayName = "Combat"),
+	Boss UMETA(DisplayName = "Boss"),
 	GameOver UMETA(DisplayName = "GameOver"),    
 	GameClear UMETA(DisplayName = "GameClear")
 };
@@ -71,6 +72,7 @@ public:
 	void StartStealthPhase();
 	void StartCombatPhase();
 	void StartGameOverPhase();
+	void StartBossPhase();
 
 	FTimerHandle GameOverTimerHandle;
 
