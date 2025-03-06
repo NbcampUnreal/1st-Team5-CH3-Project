@@ -73,6 +73,7 @@ public:
 	void StartCombatPhase();
 	void StartGameOverPhase();
 	void StartBossPhase();
+	void StartGameClearPhase();
 
 	FTimerHandle GameOverTimerHandle;
 

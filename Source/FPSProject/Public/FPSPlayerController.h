@@ -111,6 +111,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void QuitGame();
 	UFUNCTION(BlueprintCallable)
+	void ResetGameData();
+	UFUNCTION(BlueprintCallable)
 	void TogglePauseMenu();
 	
 

@@ -65,16 +65,18 @@ void ARallyPoint::OnOverlapBegin(
 						//그냥 통과
 						return;
 					}
+					else if (NextPhase == EGamePhase::GameClear)
+					{
+						//그냥 통과
+						return;
+					}
 				}
 				else
 				{
 					if (NextPhase == EGamePhase::GameOver)
 					{
-						// Spawn Boss
-						BasicGameState->SetGamePhase(EGamePhase::Boss);
 						return;
 					}
-
 				}
 				BasicGameState->SetGamePhase(NextPhase);
 			}

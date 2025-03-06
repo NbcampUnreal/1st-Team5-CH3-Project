@@ -16,6 +16,7 @@ public:
     float TotalPlayTime = 0.f;
     UPROPERTY(BlueprintReadOnly, Category = "Objective")
     bool bIsDocumentDestroyed = false; 
+    bool bIsGameClear = false;
 
     void AddScore(int Amount) { TotalScore += Amount; }
     void AddKill() { TotalKillCount++; }
