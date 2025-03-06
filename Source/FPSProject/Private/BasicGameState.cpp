@@ -275,7 +275,7 @@ void ABasicGameState::SetGamePhase(EGamePhase NewPhase)
 
 void ABasicGameState::StartTutorialPhase()
 {
-    CurrentMissionText = TEXT("임무: 가옥에 잡입하기");
+    CurrentMissionText = TEXT("임무: 가옥에 잠입하기");
     GetFPSPlayerController()->ShowMission();
     UpdateMissionHUD();
 }

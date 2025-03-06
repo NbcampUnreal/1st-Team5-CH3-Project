@@ -241,7 +241,7 @@ void AFPSPlayerController::ShowMission()
                 case EGamePhase::Tutorial:
                     DisplayText1 = TEXT("밤이 깊었다. 관아의 경비가 조금씩 느슨해지고 있어.");
                     DisplayText2 = TEXT("이 집에는 백성들의 피와 땀을 착취하는 문서들이 잔뜩 있다지.");
-                    DisplayText3 = TEXT("어서 잡입해보자.");
+                    DisplayText3 = TEXT("어서 잠입해보자.");
                     DisplayText4 = TEXT("");
                     DisplayText5 = TEXT("");
                     break;
@@ -249,7 +249,7 @@ void AFPSPlayerController::ShowMission()
                     DisplayText1 = TEXT("무언가 수상해.왜 이렇게 많은 포졸들이 지키고 있는거지?");
                     DisplayText2 = TEXT("역시 무언가 수상해.");
                     DisplayText3 = TEXT("경비병 에게 다가가면 들키고 말꺼야");
-                    DisplayText4 = TEXT("바로 왼쪽 뒷길을 이용하여 잡입해보자");
+                    DisplayText4 = TEXT("바로 왼쪽 뒷길을 이용하여 잠입해보자");
                     DisplayText5 = TEXT("");
                     break;
                 case EGamePhase::Combat:
