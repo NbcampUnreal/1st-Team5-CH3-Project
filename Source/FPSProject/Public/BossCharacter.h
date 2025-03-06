@@ -26,6 +26,12 @@ public:
     // 인터페이스 TakeDamage 함수 오버라이드
     virtual void TakeDamage(float DamageAmount) override;
 
+    // 수면 함수 오버라이드
+    virtual void Sleep(float Duration) override;
+    
+    // 깨어나기 함수 오버라이드
+    virtual void WakeUp() override;
+
     // 공격 범위 체크 함수
     bool IsInAttackRange(AActor *Target) const;
 

@@ -55,11 +55,11 @@ public:
 
     // 마취 효과 적용 (마취총에 맞았을 때 호출)
     UFUNCTION(BlueprintCallable, Category = "AI|State")
-    void Sleep(float Duration);
+    virtual void Sleep(float Duration);
 
     // 마취 해제 함수
     UFUNCTION(BlueprintCallable, Category = "AI|State")
-    void WakeUp();
+    virtual void WakeUp();
 
     // 플레이어 상태에 따라 감지 범위 업데이트
     void UpdateDetectionRangeForPlayerState(AFPSCharacter *Player);

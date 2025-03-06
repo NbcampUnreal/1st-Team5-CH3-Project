@@ -10,6 +10,7 @@
 #include "FPSCharacter.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BasicGameState.h"
+#include "BasicGameInstance.h"
 
 ABossCharacter::ABossCharacter()
 {
@@ -772,13 +773,124 @@ void ABossCharacter::ShowBossHealthUI()
 // 보스 체력 UI 숨김 함수
 void ABossCharacter::HideBossHealthUI()
 {
-    if (bHealthUIVisible && HealthUIWidget)
+    // 이미 숨겨져 있으면 무시
+    if (!bHealthUIVisible || !HealthUIWidget)
     {
-        HealthUIWidget->RemoveFromParent();
-        HealthUIWidget = nullptr;
-        bHealthUIVisible = false;
+        return;
+    }
+    
+    // 위젯 제거
+    HealthUIWidget->RemoveFromParent();
+    HealthUIWidget = nullptr;
+    bHealthUIVisible = false;
+    
+    UE_LOG(LogTemp, Warning, TEXT("보스 체력 UI가 숨겨졌습니다."));
+}
+
+void ABossCharacter::Sleep(float Duration)
+{
+    if (bIsDead || bIsSleeping)
+        return;
+
+    // 수면 상태 설정
+    bIsSleeping = true;
+    SleepDuration = 1.0f; // 항상 1.5초로 고정
+    SleepRemainingTime = 1.0f;
+
+    // 수면 UI 활성화
+    if (SleepStateWidgetComp)
+    {
+        SleepStateWidgetComp->SetVisibility(true);
+    }
+
+    // 진행 중인 공격 애니메이션 중지
+    UAnimInstance *AnimInstance = GetMesh()->GetAnimInstance();
+    if (AnimInstance)
+    {
+        // 공격 애니메이션 중지
+        if (AttackMontage && AnimInstance->Montage_IsPlaying(AttackMontage))
+        {
+            AnimInstance->Montage_Stop(0.1f, AttackMontage);
+        }
         
-        UE_LOG(LogTemp, Warning, TEXT("보스 체력 UI가 숨겨졌습니다."));
+        // 무기 애니메이션 중지
+        if (WeaponAttackMontage && WeaponMesh)
+        {
+            UAnimInstance *WeaponAnimInstance = WeaponMesh->GetAnimInstance();
+            if (WeaponAnimInstance && WeaponAnimInstance->Montage_IsPlaying(WeaponAttackMontage))
+            {
+                WeaponAnimInstance->Montage_Stop(0.1f, WeaponAttackMontage);
+            }
+        }
+    }
+
+    // 공격 관련 타이머 초기화
+    GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+    GetWorld()->GetTimerManager().ClearTimer(AttackCooldownTimer);
+    bCanAttack = false; // 수면 상태에서는 공격 불가
+
+    // AI 이동 중지
+    GetCharacterMovement()->StopMovementImmediately();
+
+    // AI 컨트롤러 비활성화
+    if (AEnemyAIController *AIController = Cast<AEnemyAIController>(GetController()))
+    {
+        AIController->GetBrainComponent()->StopLogic("Sleeping");
+    }
+
+    // 게임 인스턴스에 수면 카운트 증가
+    if (UBasicGameInstance *GameInstance = Cast<UBasicGameInstance>(UGameplayStatics::GetGameInstance(this)))
+    {
+        GameInstance->AddSleep();
+        GameInstance->AddScore(500);
+    }
+
+    // 기존 타이머 제거 후 새 타이머 설정 (항상 1초)
+    GetWorld()->GetTimerManager().ClearTimer(SleepTimerHandle);
+    
+    // 타이머 델리게이트 생성
+    FTimerDelegate TimerDelegate;
+    TimerDelegate.BindUObject(this, &ABossCharacter::WakeUp);
+    
+    // 타이머 설정 (항상 1초)
+    GetWorld()->GetTimerManager().SetTimer(
+        SleepTimerHandle,
+        TimerDelegate,
+        1.0f, // 항상 1초로 고정
+        false);
+    
+    UE_LOG(LogTemp, Warning, TEXT("보스가 수면 상태에 들어갔습니다. 수면 시간: 1초"));
+}
+
+void ABossCharacter::WakeUp()
+{
+    UE_LOG(LogTemp, Warning, TEXT("보스가 깨어납니다."));
+    if (bIsDead)
+        return;
+
+    bIsSleeping = false;
+    SleepRemainingTime = 0.0f;
+
+    // 수면 UI 비활성화
+    if (SleepStateWidgetComp)
+    {
+        SleepStateWidgetComp->SetVisibility(false);
+        UE_LOG(LogTemp, Warning, TEXT("보스 수면 UI 비활성화"));
+    }
+
+    // 공격 가능 상태 복원 (일정 시간 후)
+    GetWorld()->GetTimerManager().SetTimer(
+        AttackCooldownTimer,
+        [this]()
+        { bCanAttack = true; },
+        AttackCooldown * 0.5f, // 깨어난 후 짧은 쿨다운
+        false);
+
+    // AI 컨트롤러 재활성화
+    if (AEnemyAIController *AIController = Cast<AEnemyAIController>(GetController()))
+    {
+        AIController->GetBrainComponent()->StartLogic();
+        UE_LOG(LogTemp, Warning, TEXT("보스 AI 컨트롤러 재활성화"));
     }
 }
 
