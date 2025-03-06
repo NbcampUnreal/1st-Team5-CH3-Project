@@ -262,6 +262,7 @@ void ABasicGameState::SetGamePhase(EGamePhase NewPhase)
         StartCombatPhase();
         break;
     case EGamePhase::GameOver:
+        StartGameOverPhase();
         break;
     }
 }
@@ -302,6 +303,21 @@ void ABasicGameState::StartCombatPhase()
     }
 
     UpdateMissionHUD();
+}
+
+void ABasicGameState::StartGameOverPhase()
+{
+    if (AFPSPlayerController* FPSPlayerController = GetFPSPlayerController())
+    {
+        FPSPlayerController->ShowMission();
+    }
+    GetWorldTimerManager().SetTimer(
+        GameOverTimerHandle,
+        this,
+        &ABasicGameState::OnGameOver,
+        3.0f,
+        false
+    );
 }
 
 

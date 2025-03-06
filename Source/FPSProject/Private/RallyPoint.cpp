@@ -56,8 +56,7 @@ void ARallyPoint::OnOverlapBegin(
 					if (NextPhase == EGamePhase::GameOver)
 					{
 						// 걸렸을 때 UI 띄우기 + 게임 오버
-						BasicGameState->OnGameOver();
-
+						BasicGameState->SetGamePhase(NextPhase);
 						return;
 					}
 					else if(NextPhase == EGamePhase::Combat)
