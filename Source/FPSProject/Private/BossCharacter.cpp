@@ -164,8 +164,6 @@ float ABossCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const &
     // 보스는 데미지를 약간 덜 받도록 설정 (방어력 증가)
     float ModifiedDamage = DamageAmount * 0.8f;
 
-    UE_LOG(LogTemp, Warning, TEXT("보스가 데미지를 받았습니다: %f (원래 데미지: %f)"), ModifiedDamage, DamageAmount);
-
     // 체력 UI 표시 (데미지를 입은 순간에만)
     if (!bHealthUIVisible)
     {

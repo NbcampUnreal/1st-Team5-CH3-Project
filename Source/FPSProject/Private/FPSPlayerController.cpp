@@ -159,6 +159,20 @@ void AFPSPlayerController::ShowGameOverScreen()
             SetInputMode(FInputModeUIOnly());
         }
 
+        if (UBasicGameInstance* BasicGameInstance = Cast<UBasicGameInstance>(UGameplayStatics::GetGameInstance(this)))
+        {
+            if (BasicGameInstance->bIsGameClear)
+            {
+                if (UTextBlock* GameOverText = Cast<UTextBlock>(GameOverWidgetInstance->GetWidgetFromName(TEXT("GameOverText"))))
+                {
+                    GameOverText->SetText(FText::FromString(TEXT("임무 성공")));
+
+                    FSlateColor BlueColor = FSlateColor(FLinearColor(0.0f, 0.0f, 1.0f, 1.0f));
+                    GameOverText->SetColorAndOpacity(BlueColor);
+                }
+            }
+        }
+
         UFunction* PlayAnimFunc = GameOverWidgetInstance->FindFunction(FName("PlayGameOverAnim"));
         if (PlayAnimFunc)
         {
@@ -204,7 +218,7 @@ void AFPSPlayerController::ShowGameOverScreen()
 
 void AFPSPlayerController::ShowMission()
 {
-
+    UE_LOG(LogTemp,Warning, TEXT("ShowMission()"))
     MissionWidgetInstance = CreateWidget<UUserWidget>(this, MissionWidgetClass);
     if (MissionWidgetInstance)
     {
@@ -253,11 +267,13 @@ void AFPSPlayerController::ShowMission()
                     DisplayText5 = TEXT("");
                     break;
                 case EGamePhase::GameClear:
-                    DisplayText1 = TEXT("미션 성공");
-                    DisplayText2 = TEXT("");
-                    DisplayText3 = TEXT("");
-                    DisplayText4 = TEXT("");
+                    DisplayText1 = TEXT("포도대장을 쓰러뜨리고 탈출에 성공했다.");
+                    DisplayText2 = TEXT("동료들이 나타나 길을 열었다.");
+                    DisplayText3 = TEXT("불길이 치솟는 관아를 뒤로한 채, 모두 달아났다.");
+                    DisplayText4 = TEXT("자유를 쟁취한 자들, 그들의 싸움은 이제 시작이다.");
                     DisplayText5 = TEXT("");
+                    UTextBlock* InformationText = Cast<UTextBlock>(MissionWidgetInstance->GetWidgetFromName(TEXT("InformationText")));
+                    InformationText->SetVisibility(ESlateVisibility::Hidden);
                     break;
             }
         }
@@ -284,8 +300,10 @@ void AFPSPlayerController::ShowMission()
 
 void AFPSPlayerController::HideMission()
 {
+    UE_LOG(LogTemp, Warning, TEXT("HideMission()"))
     if (bMissionActive && MissionWidgetInstance)
     {
+        UE_LOG(LogTemp, Warning, TEXT("(bMissionActive && MissionWidgetInstance"))
         MissionWidgetInstance->RemoveFromParent();
         MissionWidgetInstance = nullptr;
 
@@ -323,6 +341,20 @@ void AFPSPlayerController::QuitGame()
         EQuitPreference::Quit,
         false
     );
+}
+
+void AFPSPlayerController::ResetGameData()
+{
+    UBasicGameInstance* BasicGameInstance = Cast<UBasicGameInstance>(UGameplayStatics::GetGameInstance(this));
+    if (BasicGameInstance)
+    {
+        BasicGameInstance->TotalPlayTime = 0;
+        BasicGameInstance->TotalKillCount = 0;
+        BasicGameInstance->TotalSleepCount = 0;
+        BasicGameInstance->TotalScore = 0;
+        BasicGameInstance->bIsDocumentDestroyed = false;
+        BasicGameInstance->bIsGameClear = false;
+    }
 }
 
 void AFPSPlayerController::TogglePauseMenu()

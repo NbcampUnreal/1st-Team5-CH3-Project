@@ -67,7 +67,7 @@ void ABasicGameState::OnGameOver()
     if (AFPSPlayerController* PlayerController = GetFPSPlayerController())
     {
         PlayerController->SetPause(true);
-        
+   
         PlayerController->ShowGameOverScreen();
     }
 }
@@ -172,7 +172,6 @@ void ABasicGameState::UpdateMissionHUD()
             AFPSCharacter* FPSCharacter = Cast<AFPSCharacter>(FPSPlayerController->GetPawn());
             if (FPSCharacter)
             {
-                //Mission Text
                 if (UTextBlock* MissionText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("MissionText"))))
                 {
                     MissionText->SetText(FText::FromString(CurrentMissionText));
@@ -268,6 +267,9 @@ void ABasicGameState::SetGamePhase(EGamePhase NewPhase)
     case EGamePhase::Boss:
         StartBossPhase();
         break;
+    case EGamePhase::GameClear:
+        StartGameClearPhase();
+        break;
     }
 }
 
@@ -305,7 +307,6 @@ void ABasicGameState::StartCombatPhase()
             FPSCharacter->SetHealth(200.f);
         }
     }
-
     UpdateMissionHUD();
 }
 
@@ -333,6 +334,25 @@ void ABasicGameState::StartBossPhase()
         CurrentMissionText = TEXT("포도 대장을 처치 하고 이곳을 빠져나가기.");
         UpdateMissionHUD();
     }
+}
+
+void ABasicGameState::StartGameClearPhase()
+{
+    if (AFPSPlayerController* FPSPlayerController = GetFPSPlayerController())
+    {
+        FPSPlayerController->ShowMission();
+    }
+
+    UBasicGameInstance* BasicGameInstace = GetBasicGameInstance();
+    BasicGameInstace->bIsGameClear = true;
+
+    GetWorldTimerManager().SetTimer(
+        GameOverTimerHandle,
+        this,
+        &ABasicGameState::OnGameOver,
+        5.0f,
+        false
+    );
 }
 
 
