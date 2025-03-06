@@ -23,6 +23,9 @@ public:
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const &DamageEvent,
                              class AController *EventInstigator, AActor *DamageCauser) override;
 
+    // 인터페이스 TakeDamage 함수 오버라이드
+    virtual void TakeDamage(float DamageAmount) override;
+
     // 공격 범위 체크 함수
     bool IsInAttackRange(AActor *Target) const;
 
