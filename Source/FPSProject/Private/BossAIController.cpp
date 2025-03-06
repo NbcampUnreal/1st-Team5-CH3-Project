@@ -61,12 +61,6 @@ bool ABossAIController::CanSeePlayerBoss()
         return false;
     }
 
-    // 감지 기능이 비활성화되어 있으면 항상 false 반환
-    if (!Boss->IsDetectionEnabled())
-    {
-        return false;
-    }
-
     // 거리 계산
     float Distance = FVector::Dist(Boss->GetActorLocation(), PlayerPawn->GetActorLocation());
     
@@ -124,12 +118,6 @@ bool ABossAIController::IsInAttackRange()
         return false;
     }
 
-    // 감지 기능이 비활성화되어 있거나 순찰 모드일 경우 항상 false 반환
-    if (!Boss->IsDetectionEnabled() || Boss->IsInPatrolMode())
-    {
-        return false;
-    }
-
     // 보스 캐릭터의 공격 범위 체크 함수 사용
     bool bInRange = Boss->IsInAttackRange(PlayerPawn);
 
@@ -157,22 +145,6 @@ void ABossAIController::UpdateBossPlayerDetection()
 
     if (Boss && PlayerPawn)
     {
-        // 감지 기능이 비활성화되어 있으면 감지 상태 초기화
-        if (!Boss->IsDetectionEnabled())
-        {
-            if (BlackboardComponent)
-            {
-                BlackboardComponent->SetValueAsBool("CanUseSpecialAttack", false);
-                BlackboardComponent->SetValueAsBool("IsInAttackRange", false);
-                BlackboardComponent->SetValueAsObject("TargetActor", nullptr);
-                BlackboardComponent->SetValueAsBool("CanSeePlayer", false);
-            }
-            
-            Boss->SetPlayerDetected(false);
-            Boss->bIsChasing = false;
-            return;
-        }
-
         // 플레이어와의 거리 계산
         float DistanceToPlayer = FVector::Dist(Boss->GetActorLocation(), PlayerPawn->GetActorLocation());
 

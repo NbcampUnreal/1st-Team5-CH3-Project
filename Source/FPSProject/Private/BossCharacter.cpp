@@ -24,10 +24,6 @@ ABossCharacter::ABossCharacter()
     
     MaxHealth = 1200.0f;
 
-    // 감지 기능 초기값 설정
-    bDetectionEnabled = true;
-    bPatrolMode = false;
-
     // 체력 UI 초기화
     bHealthUIVisible = false;
     HealthUIWidget = nullptr;
@@ -52,45 +48,6 @@ void ABossCharacter::BeginPlay()
     if (DetectionRangeWidgetComp)
     {
         DetectionRangeWidgetComp->SetDrawSize(FVector2D(DetectionRange * 2.0f, DetectionRange * 2.0f));
-    }
-
-    // 게임 시작 시 현재 게임 상태에 따라 감지 기능 설정
-    ABasicGameState* GameState = Cast<ABasicGameState>(UGameplayStatics::GetGameState(GetWorld()));
-    if (GameState)
-    {
-        EGamePhase CurrentPhase = GameState->CurrentPhase;
-        
-        // 스텔스 페이즈인 경우
-        if (CurrentPhase == EGamePhase::Stealth)
-        {
-            SetDetectionEnabled(false);
-            SetDetectionUIVisible(false);
-            SetPatrolMode(true);
-            UE_LOG(LogTemp, Warning, TEXT("보스: 시작 시 스텔스 페이즈 - 감지 기능 비활성화"));
-        }
-        // 컴뱃 페이즈인 경우
-        else if (CurrentPhase == EGamePhase::Combat)
-        {
-            SetDetectionEnabled(true);
-            SetDetectionUIVisible(true);
-            SetPatrolMode(false);
-            UE_LOG(LogTemp, Warning, TEXT("보스: 시작 시 컴뱃 페이즈 - 감지 기능 활성화"));
-        }
-        // 기본적으로는 감지 기능 비활성화 (튜토리얼 등)
-        else
-        {
-            SetDetectionEnabled(false);
-            SetDetectionUIVisible(false);
-            SetPatrolMode(true);
-            UE_LOG(LogTemp, Warning, TEXT("보스: 시작 시 기본 상태 - 감지 기능 비활성화"));
-        }
-    }
-    // GameState가 없는 경우 기본값 설정
-    else
-    {
-        SetDetectionEnabled(false);
-        SetDetectionUIVisible(false);
-        SetPatrolMode(true);
     }
 
 #if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
@@ -146,44 +103,23 @@ void ABossCharacter::Tick(float DeltaTime)
     // 부모 클래스의 Tick 함수 호출
     Super::Tick(DeltaTime);
 
-    // 게임 상태에 따라 감지 기능 제어
-    ABasicGameState* GameState = Cast<ABasicGameState>(UGameplayStatics::GetGameState(GetWorld()));
-    if (GameState)
+#if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
+    // 디버그 정보 출력 (3초마다)
+    static float LastDebugTime = 0.0f;
+    float CurrentTime = GetWorld()->GetTimeSeconds();
+    if (CurrentTime - LastDebugTime > 3.0f)
     {
-        // 게임 상태가 변경되었는지 확인하기 위한 정적 변수
-        static EGamePhase LastPhase = EGamePhase::Tutorial;
-        EGamePhase CurrentPhase = GameState->CurrentPhase;
-        
-        // 게임 상태가 변경되었을 때만 처리
-        if (LastPhase != CurrentPhase)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("보스: 게임 상태 변경 감지 - %s -> %s"), 
-                *UEnum::GetValueAsString(LastPhase), 
-                *UEnum::GetValueAsString(CurrentPhase));
-                
-            // 스텔스 페이즈로 변경된 경우
-            if (CurrentPhase == EGamePhase::Stealth)
-            {
-                SetDetectionEnabled(false);
-                SetDetectionUIVisible(false);
-                SetPatrolMode(true);
-                UE_LOG(LogTemp, Warning, TEXT("보스: 스텔스 페이즈 감지 - 감지 기능 비활성화"));
-            }
-            // 컴뱃 페이즈로 변경된 경우
-            else if (CurrentPhase == EGamePhase::Combat)
-            {
-                SetDetectionEnabled(true);
-                SetDetectionUIVisible(true);
-                SetPatrolMode(false);
-                UE_LOG(LogTemp, Warning, TEXT("보스: 컴뱃 페이즈 감지 - 감지 기능 활성화"));
-            }
-            
-            // 현재 상태를 마지막 상태로 저장
-            LastPhase = CurrentPhase;
-        }
+        UE_LOG(LogTemp, Warning, TEXT("보스 상태 - 체력: %f/%f, 수면: %s"), 
+            CurrentHealth, MaxHealth, bIsSleeping ? TEXT("O") : TEXT("X"));
+        LastDebugTime = CurrentTime;
     }
+#endif
 
-    // 추가적인 보스 전용 로직은 여기에 구현
+    // 수면 상태일 때 남은 시간 업데이트
+    if (bIsSleeping)
+    {
+        SleepRemainingTime = FMath::Max(0.0f, SleepRemainingTime - DeltaTime);
+    }
 }
 
 // 공격 검증 함수 - 보스의 공격 범위 검사 로직 개선
@@ -679,59 +615,21 @@ void ABossCharacter::UpdateMovementSpeed()
 #endif
 }
 
-// PlayWeaponAnimation 함수 오버로드
+// 무기 애니메이션 재생 함수 오버로드 구현
 void ABossCharacter::PlayWeaponAnimation(UAnimMontage* WeaponAnimation, float PlayRate)
 {
     if (WeaponAnimation && WeaponMesh)
     {
-        // 무기 메시의 애니메이션 인스턴스 가져오기
         UAnimInstance* WeaponAnimInstance = WeaponMesh->GetAnimInstance();
         if (WeaponAnimInstance)
         {
-            float Duration = WeaponAnimInstance->Montage_Play(WeaponAnimation, PlayRate);
-            UE_LOG(LogTemp, Warning, TEXT("보스 무기 애니메이션 재생: 속도 %f, 지속시간 %f"), PlayRate, Duration);
-        }
-        else
-        {
-            UE_LOG(LogTemp, Error, TEXT("보스 무기 애니메이션 인스턴스가 null입니다!"));
+            WeaponAnimInstance->Montage_Play(WeaponAnimation, PlayRate);
         }
     }
     else
     {
         UE_LOG(LogTemp, Error, TEXT("보스 무기 애니메이션 또는 WeaponMesh가 null입니다!"));
     }
-}
-
-// 감지 기능 활성화/비활성화 함수 구현
-void ABossCharacter::SetDetectionEnabled(bool bEnabled)
-{
-    bDetectionEnabled = bEnabled;
-    
-    // 감지 기능이 비활성화되면 플레이어 감지 상태도 초기화
-    if (!bEnabled)
-    {
-        SetPlayerDetected(false);
-        bIsChasing = false;
-    }
-    
-    UE_LOG(LogTemp, Warning, TEXT("보스 감지 기능 %s"), bEnabled ? TEXT("활성화") : TEXT("비활성화"));
-}
-
-// 감지 UI 표시/숨김 함수 구현
-void ABossCharacter::SetDetectionUIVisible(bool bVisible)
-{
-    if (DetectionRangeWidgetComp)
-    {
-        DetectionRangeWidgetComp->SetVisibility(bVisible);
-        UE_LOG(LogTemp, Warning, TEXT("보스 감지 범위 UI %s"), bVisible ? TEXT("표시") : TEXT("숨김"));
-    }
-}
-
-// 순찰 모드 설정 함수 구현
-void ABossCharacter::SetPatrolMode(bool bEnabled)
-{
-    bPatrolMode = bEnabled;
-    UE_LOG(LogTemp, Warning, TEXT("보스 순찰 모드 %s"), bEnabled ? TEXT("활성화") : TEXT("비활성화"));
 }
 
 // 보스 체력 UI 표시 함수
@@ -750,23 +648,17 @@ void ABossCharacter::ShowBossHealthUI()
         return;
     }
     
-    // 위젯 클래스가 설정되어 있는지 확인
+    // 체력 UI 위젯 생성
     if (HealthUIWidgetClass)
     {
-        // 위젯 생성
         HealthUIWidget = CreateWidget<UUserWidget>(PC, HealthUIWidgetClass);
         if (HealthUIWidget)
         {
-            // 위젯 표시
-            HealthUIWidget->AddToViewport(10); // Z-Order 10으로 설정 (다른 UI보다 앞에 표시)
+            HealthUIWidget->AddToViewport();
             bHealthUIVisible = true;
             
             UE_LOG(LogTemp, Warning, TEXT("보스 체력 UI가 표시되었습니다."));
         }
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("보스 체력 UI 위젯 클래스가 설정되지 않았습니다."));
     }
 }
 
