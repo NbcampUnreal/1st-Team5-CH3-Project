@@ -26,6 +26,10 @@ ABossCharacter::ABossCharacter()
     // 감지 기능 초기값 설정
     bDetectionEnabled = true;
     bPatrolMode = false;
+
+    // 체력 UI 초기화
+    bHealthUIVisible = false;
+    HealthUIWidget = nullptr;
 }
 
 void ABossCharacter::BeginPlay()
@@ -224,6 +228,12 @@ float ABossCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const &
     float ModifiedDamage = DamageAmount * 0.8f;
 
     UE_LOG(LogTemp, Warning, TEXT("보스가 데미지를 받았습니다: %f (원래 데미지: %f)"), ModifiedDamage, DamageAmount);
+
+    // 체력 UI 표시 (데미지를 입은 순간에만)
+    if (!bHealthUIVisible)
+    {
+        ShowBossHealthUI();
+    }
 
     // 부모 클래스의 TakeDamage 호출
     return Super::TakeDamage(ModifiedDamage, DamageEvent, EventInstigator, DamageCauser);
@@ -629,4 +639,69 @@ void ABossCharacter::SetPatrolMode(bool bEnabled)
 {
     bPatrolMode = bEnabled;
     UE_LOG(LogTemp, Warning, TEXT("보스 순찰 모드 %s"), bEnabled ? TEXT("활성화") : TEXT("비활성화"));
+}
+
+// 보스 체력 UI 표시 함수
+void ABossCharacter::ShowBossHealthUI()
+{
+    // 이미 표시 중이면 무시
+    if (bHealthUIVisible)
+    {
+        return;
+    }
+    
+    // 플레이어 컨트롤러 가져오기
+    APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+    if (!PC)
+    {
+        return;
+    }
+    
+    // 위젯 클래스가 설정되어 있는지 확인
+    if (HealthUIWidgetClass)
+    {
+        // 위젯 생성
+        HealthUIWidget = CreateWidget<UUserWidget>(PC, HealthUIWidgetClass);
+        if (HealthUIWidget)
+        {
+            // 위젯 표시
+            HealthUIWidget->AddToViewport(10); // Z-Order 10으로 설정 (다른 UI보다 앞에 표시)
+            bHealthUIVisible = true;
+            
+            UE_LOG(LogTemp, Warning, TEXT("보스 체력 UI가 표시되었습니다."));
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("보스 체력 UI 위젯 클래스가 설정되지 않았습니다."));
+    }
+}
+
+// 보스 체력 UI 숨김 함수
+void ABossCharacter::HideBossHealthUI()
+{
+    if (bHealthUIVisible && HealthUIWidget)
+    {
+        HealthUIWidget->RemoveFromParent();
+        HealthUIWidget = nullptr;
+        bHealthUIVisible = false;
+        
+        UE_LOG(LogTemp, Warning, TEXT("보스 체력 UI가 숨겨졌습니다."));
+    }
+}
+
+// 보스 체력 비율 반환 함수
+float ABossCharacter::GetHealthPercent() const
+{
+    return CurrentHealth / MaxHealth;
+}
+
+// Die 함수 수정 (함수 이름은 실제 코드에 맞게 조정)
+void ABossCharacter::Die()
+{
+    // 체력 UI 숨기기
+    HideBossHealthUI();
+    
+    // 기존 Die 함수 내용
+    Super::Die();
 }
