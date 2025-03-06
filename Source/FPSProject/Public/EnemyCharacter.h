@@ -54,6 +54,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "AI|State")
     void Sleep(float Duration);
 
+    // 마취 해제 함수
+    UFUNCTION(BlueprintCallable, Category = "AI|State")
+    void WakeUp();
+
     // 플레이어 상태에 따라 감지 범위 업데이트
     void UpdateDetectionRangeForPlayerState(AFPSCharacter *Player);
 
@@ -178,19 +182,16 @@ protected:
     bool bPlayerDetected;
 
     // 수면 상태 지속 시간
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI|State")
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI|State")
     float SleepDuration;
 
     // 수면 상태 남은 시간
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI|State")
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI|State")
     float SleepRemainingTime;
 
 private:
     // 사망 상태
     bool bIsDead;
-
-    // 마취 해제 함수
-    void WakeUp();
 
     // 감지 범위 UI 위젯 캐싱
     UUserWidget *CachedDetectionWidget;
