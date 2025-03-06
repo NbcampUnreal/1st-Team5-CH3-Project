@@ -290,6 +290,7 @@ void ABasicGameState::StartStealthPhase()
 
 void ABasicGameState::StartCombatPhase()
 {
+    CurrentMissionText = TEXT("임무: 가옥을 탈출하기");
     if (AFPSPlayerController* FPSPlayerController = GetFPSPlayerController())
     {
         FPSPlayerController->ShowMission();
@@ -300,8 +301,6 @@ void ABasicGameState::StartCombatPhase()
         }
     }
 
-    CurrentMissionText = TEXT("임무: 가옥을 탈출하기");
-    GetFPSPlayerController()->ShowMission();
     UpdateMissionHUD();
 }
 

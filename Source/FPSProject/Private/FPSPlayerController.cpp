@@ -211,7 +211,6 @@ void AFPSPlayerController::ShowMission()
         FInputModeGameAndUI InputMode;
         InputMode.SetWidgetToFocus(MissionWidgetInstance->TakeWidget()); // UI 포커스 유지
         SetInputMode(InputMode);
-        bShowMouseCursor = true;
 
         MissionWidgetInstance->AddToViewport();
         //Text Settings
@@ -235,8 +234,8 @@ void AFPSPlayerController::ShowMission()
                 case EGamePhase::Stealth:
                     DisplayText1 = TEXT("무언가 수상해.왜 이렇게 많은 포졸들이 지키고 있는거지?");
                     DisplayText2 = TEXT("역시 무언가 수상해.");
-                    DisplayText3 = TEXT("들키지 않게 들어가서 바로 왼쪽 뒷길을 이용하여 잡입해보자");
-                    DisplayText4 = TEXT("");
+                    DisplayText3 = TEXT("경비병 에게 다가가면 들키고 말꺼야");
+                    DisplayText4 = TEXT("바로 왼쪽 뒷길을 이용하여 잡입해보자");
                     DisplayText5 = TEXT("");
                     break;
                 case EGamePhase::Combat:
