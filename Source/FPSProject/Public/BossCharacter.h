@@ -23,6 +23,9 @@ public:
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const &DamageEvent,
                              class AController *EventInstigator, AActor *DamageCauser) override;
 
+    // 인터페이스 TakeDamage 함수 오버라이드
+    virtual void TakeDamage(float DamageAmount) override;
+
     // 공격 범위 체크 함수
     bool IsInAttackRange(AActor *Target) const;
 
@@ -65,6 +68,25 @@ public:
     UFUNCTION(BlueprintPure, Category = "Boss|AI")
     bool IsInPatrolMode() const { return bPatrolMode; }
 
+    // 보스 체력 UI 표시 함수
+    UFUNCTION(BlueprintCallable, Category = "Boss|UI")
+    void ShowBossHealthUI();
+
+    // 보스 체력 UI 숨김 함수
+    UFUNCTION(BlueprintCallable, Category = "Boss|UI")
+    void HideBossHealthUI();
+
+    // 보스 체력 비율 반환 함수 (0.0-1.0)
+    UFUNCTION(BlueprintPure, Category = "Boss|Stats")
+    float GetHealthPercent() const;
+
+    // 보스 체력 UI가 표시 중인지 확인
+    UFUNCTION(BlueprintPure, Category = "Boss|UI")
+    bool IsHealthUIVisible() const { return bHealthUIVisible; }
+
+    // 사망 처리 함수 (부모 클래스의 함수를 오버라이드)
+    virtual void Die() override;
+
 private:
     // 보스 스케일 - 기본 Enemy보다 크기
     UPROPERTY(EditDefaultsOnly, Category = "Boss|Appearance")
@@ -85,4 +107,16 @@ private:
     // 순찰 모드 여부
     UPROPERTY(EditAnywhere, Category = "Boss|AI")
     bool bPatrolMode;
+
+    // 체력 UI 표시 여부
+    UPROPERTY(VisibleAnywhere, Category = "Boss|UI")
+    bool bHealthUIVisible;
+
+    // 체력 UI 위젯 클래스
+    UPROPERTY(EditDefaultsOnly, Category = "Boss|UI")
+    TSubclassOf<UUserWidget> HealthUIWidgetClass;
+
+    // 체력 UI 위젯 인스턴스
+    UPROPERTY()
+    UUserWidget* HealthUIWidget;
 };

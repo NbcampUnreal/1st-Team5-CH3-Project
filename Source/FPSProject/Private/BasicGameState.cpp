@@ -9,6 +9,7 @@
 #include "Components/TextBlock.h"
 #include "Components/ProgressBar.h"
 #include "Components/Image.h"
+#include "BossSpawner.h"
 
 ABasicGameState::ABasicGameState()
 {
@@ -264,6 +265,9 @@ void ABasicGameState::SetGamePhase(EGamePhase NewPhase)
     case EGamePhase::GameOver:
         StartGameOverPhase();
         break;
+    case EGamePhase::Boss:
+        StartBossPhase();
+        break;
     }
 }
 
@@ -318,6 +322,17 @@ void ABasicGameState::StartGameOverPhase()
         3.0f,
         false
     );
+}
+
+void ABasicGameState::StartBossPhase()
+{
+    ABossSpawner* BossSpawner = Cast<ABossSpawner>(UGameplayStatics::GetActorOfClass(GetWorld(), ABossSpawner::StaticClass()));
+    if (BossSpawner)
+    {
+        BossSpawner->SpawnBoss();
+        CurrentMissionText = TEXT("포도 대장을 처치 하고 이곳을 빠져나가기.");
+        UpdateMissionHUD();
+    }
 }
 
 

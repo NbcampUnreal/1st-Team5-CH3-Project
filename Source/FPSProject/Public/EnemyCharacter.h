@@ -43,6 +43,9 @@ public:
     UPROPERTY(BlueprintReadWrite, Category = "Animation")
     bool bIsChasing = false;
 
+    UFUNCTION(BlueprintCallable, Category = "AI|State")
+    bool GetIsDead() const { return bIsDead; }
+
     // 이동 속도 업데이트
     void UpdateMovementSpeed();
 
@@ -189,9 +192,11 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI|State")
     float SleepRemainingTime;
 
-private:
     // 사망 상태
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI|State")
     bool bIsDead;
+
+private:
 
     // 감지 범위 UI 위젯 캐싱
     UUserWidget *CachedDetectionWidget;

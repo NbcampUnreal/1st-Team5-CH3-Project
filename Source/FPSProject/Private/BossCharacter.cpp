@@ -26,6 +26,10 @@ ABossCharacter::ABossCharacter()
     // 감지 기능 초기값 설정
     bDetectionEnabled = true;
     bPatrolMode = false;
+
+    // 체력 UI 초기화
+    bHealthUIVisible = false;
+    HealthUIWidget = nullptr;
 }
 
 void ABossCharacter::BeginPlay()
@@ -225,8 +229,106 @@ float ABossCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const &
 
     UE_LOG(LogTemp, Warning, TEXT("보스가 데미지를 받았습니다: %f (원래 데미지: %f)"), ModifiedDamage, DamageAmount);
 
+    // 체력 UI 표시 (데미지를 입은 순간에만)
+    if (!bHealthUIVisible)
+    {
+        ShowBossHealthUI();
+    }
+
     // 부모 클래스의 TakeDamage 호출
     return Super::TakeDamage(ModifiedDamage, DamageEvent, EventInstigator, DamageCauser);
+}
+
+// 인터페이스 구현 - 부모 클래스의 TakeDamage 함수 오버라이드
+void ABossCharacter::TakeDamage(float DamageAmount)
+{
+    if (bIsDead)
+        return;
+
+    CurrentHealth = FMath::Max(0.0f, CurrentHealth - DamageAmount);
+    UE_LOG(LogTemp, Warning, TEXT("Boss took damage: %f, Current Health: %f"), DamageAmount, CurrentHealth);
+
+    // 현재 공격 애니메이션이 재생 중이면 중단
+    UAnimInstance *AnimInstance = GetMesh()->GetAnimInstance();
+    if (AnimInstance && AttackMontage && AnimInstance->Montage_IsPlaying(AttackMontage))
+    {
+        AnimInstance->Montage_Stop(0.1f, AttackMontage);
+        UE_LOG(LogTemp, Warning, TEXT("Stopping attack animation due to hit"));
+
+        // 공격 타이머 취소
+        GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+
+        // 공격 쿨다운 재설정 (피격 후 바로 공격하지 못하도록)
+        bCanAttack = false;
+        GetWorld()->GetTimerManager().SetTimer(
+            AttackCooldownTimer,
+            [this]()
+            { bCanAttack = true; },
+            AttackCooldown * 0.5f, // 피격 후에는 쿨다운을 절반으로 줄임
+            false);
+    }
+
+    // 피격 애니메이션 재생
+    if (HitReactionMontage)
+    {
+        // AI 컨트롤러의 행동 일시 중지
+        if (AEnemyAIController *AIController = Cast<AEnemyAIController>(GetController()))
+        {
+            AIController->GetBrainComponent()->StopLogic("Hit Reaction");
+            UE_LOG(LogTemp, Warning, TEXT("Stopping AI behavior for hit reaction"));
+
+            // 이동 중지
+            GetCharacterMovement()->StopMovementImmediately();
+        }
+
+        // 현재 재생 중인 애니메이션을 중지하고 새로운 피격 애니메이션 재생
+        StopAnimMontage();
+
+        // 피격 애니메이션 재생 속도 설정 - 보스는 더 빠르게 (5.0)
+        float PlayRate = 5.0f;
+
+        // 원래 애니메이션 길이를 가져옴
+        float OriginalDuration = PlayAnimMontage(HitReactionMontage, PlayRate);
+
+        // PlayRate를 고려한 실제 재생 시간 계산
+        float ActualDuration = OriginalDuration / PlayRate;
+
+        UE_LOG(LogTemp, Warning, TEXT("Boss playing hit reaction animation - Original Duration: %f, Actual Duration: %f"),
+               OriginalDuration, ActualDuration);
+
+        // 피격 애니메이션이 끝난 후 AI 행동 재개를 위한 타이머 설정
+        FTimerHandle HitRecoveryTimerHandle;
+        GetWorld()->GetTimerManager().SetTimer(
+            HitRecoveryTimerHandle,
+            [this]()
+            {
+                // AI 컨트롤러의 행동 재개
+                if (AEnemyAIController *AIController = Cast<AEnemyAIController>(GetController()))
+                {
+                    // 행동 로직 재개
+                    AIController->GetBrainComponent()->StartLogic();
+
+                    // 현재 행동 트리 재시작
+                    AIController->GetBrainComponent()->RestartLogic();
+
+                    UE_LOG(LogTemp, Warning, TEXT("Boss hit reaction finished, resuming AI behavior"));
+                }
+            },
+            ActualDuration * 0.9f, // 애니메이션이 거의 끝날 때 행동 재개
+            false);
+    }
+
+    // 피격 사운드 재생
+    if (HitSound)
+    {
+        UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
+        UE_LOG(LogTemp, Warning, TEXT("Playing boss hit sound"));
+    }
+
+    if (CurrentHealth <= 0.0f)
+    {
+        Die();
+    }
 }
 
 // 일반 공격 함수 구현
@@ -629,4 +731,69 @@ void ABossCharacter::SetPatrolMode(bool bEnabled)
 {
     bPatrolMode = bEnabled;
     UE_LOG(LogTemp, Warning, TEXT("보스 순찰 모드 %s"), bEnabled ? TEXT("활성화") : TEXT("비활성화"));
+}
+
+// 보스 체력 UI 표시 함수
+void ABossCharacter::ShowBossHealthUI()
+{
+    // 이미 표시 중이면 무시
+    if (bHealthUIVisible)
+    {
+        return;
+    }
+    
+    // 플레이어 컨트롤러 가져오기
+    APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+    if (!PC)
+    {
+        return;
+    }
+    
+    // 위젯 클래스가 설정되어 있는지 확인
+    if (HealthUIWidgetClass)
+    {
+        // 위젯 생성
+        HealthUIWidget = CreateWidget<UUserWidget>(PC, HealthUIWidgetClass);
+        if (HealthUIWidget)
+        {
+            // 위젯 표시
+            HealthUIWidget->AddToViewport(10); // Z-Order 10으로 설정 (다른 UI보다 앞에 표시)
+            bHealthUIVisible = true;
+            
+            UE_LOG(LogTemp, Warning, TEXT("보스 체력 UI가 표시되었습니다."));
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("보스 체력 UI 위젯 클래스가 설정되지 않았습니다."));
+    }
+}
+
+// 보스 체력 UI 숨김 함수
+void ABossCharacter::HideBossHealthUI()
+{
+    if (bHealthUIVisible && HealthUIWidget)
+    {
+        HealthUIWidget->RemoveFromParent();
+        HealthUIWidget = nullptr;
+        bHealthUIVisible = false;
+        
+        UE_LOG(LogTemp, Warning, TEXT("보스 체력 UI가 숨겨졌습니다."));
+    }
+}
+
+// 보스 체력 비율 반환 함수
+float ABossCharacter::GetHealthPercent() const
+{
+    return CurrentHealth / MaxHealth;
+}
+
+// Die 함수 수정 (함수 이름은 실제 코드에 맞게 조정)
+void ABossCharacter::Die()
+{
+    // 체력 UI 숨기기
+    HideBossHealthUI();
+    
+    // 기존 Die 함수 내용
+    Super::Die();
 }
