@@ -70,9 +70,14 @@ public:
 	void StartTutorialPhase();
 	void StartStealthPhase();
 	void StartCombatPhase();
+	void StartGameOverPhase();
+
+	FTimerHandle GameOverTimerHandle;
 
 private:
 	bool bIsPause;
+
+	
 
 	AFPSPlayerController* GetFPSPlayerController() const;
 	UBasicGameInstance* GetBasicGameInstance() const;

@@ -247,7 +247,7 @@ void AFPSPlayerController::ShowMission()
                     break;
                 case EGamePhase::GameOver:
                     DisplayText1 = TEXT("경비병 : 네 이놈 여기가 어디라고 들어오느냐!!");
-                    DisplayText2 = TEXT("경비병 : 사람 구실을 못하게 만들어줘야겠다");
+                    DisplayText2 = TEXT("경비병 : 이제 사람 구실을 못하게 만들어주마.");
                     DisplayText3 = TEXT("");
                     DisplayText4 = TEXT("");
                     DisplayText5 = TEXT("");
